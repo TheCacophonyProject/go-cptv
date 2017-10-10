@@ -1,4 +1,4 @@
-package output
+package cptv
 
 // XXX docs!
 // XXX tests!
