@@ -2,7 +2,7 @@ package cptv
 
 const (
 	magic        = "CPTV"
-	version byte = 0x01
+	version byte = 0x02
 
 	headerSection = 'H'
 	frameSection  = 'F'
@@ -12,6 +12,7 @@ const (
 	XResolution byte = 'X'
 	YResolution byte = 'Y'
 	Compression byte = 'C'
+	DeviceName  byte = 'D'
 
 	// Frame field keys
 	Offset    byte = 't'

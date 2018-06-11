@@ -61,17 +61,22 @@ After these a number of fields will exist.
 | Y resolution | 4      | 'Y'   | uint32  | Frame Y resolution (rows)
 | Compression  | 1      | 'C'   | uint8   | Compression scheme in use (0 = uncompressed)
 
+### Optional Header Field
+
+| Name         | Length | Code  | Type    | Description
+| ------------ | ------ | ----- | ------- | ---------------------------------------------
+| Device name  | ???    | 'D'   | string  | Device name e.g. camera model.
+
 ### Future Header Fields
 
 Unsupported for now but likely to get added as optional fields soon:
 
 * Latitude
 * Longitude
-* Camera model
 
 ## Frames
 
-One more frames will follow the header. Each frame starts with:
+One or more frames will follow the header. Each frame starts with:
 * 1 byte indicating a frame: "F"
 * 1 byte indicating the number of fields in the frame.
 

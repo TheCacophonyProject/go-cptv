@@ -81,6 +81,14 @@ func (f Fields) Timestamp(key byte) (time.Time, error) {
 	return time.Unix(0, int64(tRaw*1000)), nil
 }
 
+func (f Fields) String(key byte) (string, error) {
+	buf, ok := f[key]
+	if !ok {
+		return "", errors.New("not found")
+	}
+	return string(buf), nil
+}
+
 func (f Fields) get(key byte, expectedLen int) ([]byte, error) {
 	buf, ok := f[key]
 	if !ok {
@@ -133,4 +141,14 @@ func (f *FieldWriter) Uint64(code byte, v uint64) {
 
 func (f *FieldWriter) Timestamp(code byte, t time.Time) {
 	f.Uint64(code, uint64(t.UnixNano()/1000))
+}
+
+func (f *FieldWriter) String(code byte, v string) {
+	// TODO: Check length of string?
+	byteSlice := []byte(v)
+	lenByteSlice := byte(len(byteSlice))
+	f.data = append(f.data, lenByteSlice)
+	f.data = append(f.data, code)
+	f.data = append(f.data, byteSlice...)
+	f.fieldCount++
 }
