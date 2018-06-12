@@ -2,7 +2,7 @@ package cptv
 
 const (
 	magic        = "CPTV"
-	version byte = 0x02
+	version byte = 0x01
 
 	headerSection = 'H'
 	frameSection  = 'F'

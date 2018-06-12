@@ -143,12 +143,18 @@ func (f *FieldWriter) Timestamp(code byte, t time.Time) {
 	f.Uint64(code, uint64(t.UnixNano()/1000))
 }
 
-func (f *FieldWriter) String(code byte, v string) {
-	// TODO: Check length of string?
+func (f *FieldWriter) String(code byte, v string) error {
+
+	if len(v) > 255 {
+		return fmt.Errorf("String length %d greater than 255.", len(v))
+	}
+
 	byteSlice := []byte(v)
 	lenByteSlice := byte(len(byteSlice))
 	f.data = append(f.data, lenByteSlice)
 	f.data = append(f.data, code)
 	f.data = append(f.data, byteSlice...)
 	f.fieldCount++
+
+	return nil
 }

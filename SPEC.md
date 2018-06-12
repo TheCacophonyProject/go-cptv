@@ -63,9 +63,9 @@ After these a number of fields will exist.
 
 ### Optional Header Field
 
-| Name         | Length | Code  | Type    | Description
-| ------------ | ------ | ----- | ------- | ---------------------------------------------
-| Device name  | ???    | 'D'   | string  | Device name e.g. camera model.
+| Name         | Length   | Code  | Type    | Description
+| ------------ | -------- | ----- | ------- | ---------------------------------------------
+| Device name  | Variable | 'D'   | string  | Device name e.g. camera model.
 
 ### Future Header Fields
 
@@ -73,6 +73,7 @@ Unsupported for now but likely to get added as optional fields soon:
 
 * Latitude
 * Longitude
+* Camera model
 
 ## Frames
 

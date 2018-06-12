@@ -31,7 +31,10 @@ func (w *Writer) WriteHeader(deviceName string) error {
 
 	// Optional device name field
 	if len(deviceName) > 0 {
-		fields.String(DeviceName, deviceName)
+		err := fields.String(DeviceName, deviceName)
+		if err != nil {
+			return err
+		}
 	}
 
 	return w.bldr.WriteHeader(fields)
