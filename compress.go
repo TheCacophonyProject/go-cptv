@@ -1,8 +1,5 @@
 package cptv
 
-// XXX docs!
-// XXX tests!
-
 import (
 	"bytes"
 	"encoding/binary"
@@ -74,6 +71,71 @@ func (c *Compressor) Next(prev, curr *lepton3.Frame) (uint8, []byte) {
 	return width, c.outBuf.Bytes()
 }
 
+// NewDecompressor creates a new Decompressor.
+func NewDecompressor() *Decompressor {
+	return &Decompressor{
+		rows:       lepton3.FrameRows,
+		cols:       lepton3.FrameCols,
+		pixelCount: lepton3.FrameRows * lepton3.FrameCols,
+		prevFrame:  new(lepton3.Frame),
+	}
+}
+
+// Decompressor is used to decompress successive CPTV frames. See the
+// Next() method.
+type Decompressor struct {
+	cols, rows, pixelCount int
+	prevFrame              *lepton3.Frame
+	deltas                 [lepton3.FrameRows][lepton3.FrameCols]int32
+}
+
+// ByteReaderReader combines io.Reader and io.ByteReader.
+type ByteReaderReader interface {
+	io.Reader
+	io.ByteReader
+}
+
+// Next reads of stream of bytes as a ByteReaderReader and
+// decompresses them using the bit width provided into the
+// lepton3.Frame provided.
+func (d *Decompressor) Next(bitWidth uint8, compressed ByteReaderReader, out *lepton3.Frame) error {
+	var v int32
+	err := binary.Read(compressed, binary.LittleEndian, &v)
+	if err != nil {
+		return err
+	}
+
+	unpacker := NewBitUnpacker(bitWidth, compressed)
+	d.deltas[0][0] = v
+	for i := 1; i < d.pixelCount; i++ {
+		y := i / lepton3.FrameCols
+		x := i % lepton3.FrameCols
+		// Deltas are "snaked" so work backwards through every second row.
+		if y%2 == 1 {
+			x = lepton3.FrameCols - x - 1
+		}
+
+		dv, err := unpacker.Next()
+		if err != nil {
+			return err
+		}
+		v += dv
+		d.deltas[y][x] = v
+	}
+
+	// Add to delta frame to previous frame.
+	for y := 0; y < lepton3.FrameRows; y++ {
+		for x := 0; x < lepton3.FrameCols; x++ {
+			out[y][x] = uint16(int32(d.prevFrame[y][x]) + d.deltas[y][x])
+			// Now that prevFrame[y][x] has been used, copy the new
+			// value in for the next call to Next() to use.
+			// TODO: it might be fast to copy() rows separately.
+			d.prevFrame[y][x] = out[y][x]
+		}
+	}
+	return nil
+}
+
 // PackBits takes a slice of signed integers and packs them into an
 // abitrary (smaller) bit width. The most significant bit is written
 // out first.
@@ -81,7 +143,7 @@ func PackBits(width uint8, input []int32, w io.ByteWriter) {
 	var bits uint32 // scratch buffer
 	var nBits uint8 // number of bits in use in scratch
 	for _, d := range input {
-		bits |= twosComp(d, width) << (32 - width - nBits)
+		bits |= uint32(twosComp(d, width) << (32 - width - nBits))
 		nBits += width
 		for nBits >= 8 {
 			w.WriteByte(uint8(bits >> 24))
@@ -92,6 +154,42 @@ func PackBits(width uint8, input []int32, w io.ByteWriter) {
 	if nBits > 0 {
 		w.WriteByte(uint8(bits >> 24))
 	}
+}
+
+// NewBitUnpacker creates a new BitUnpacker. Integers will be
+// extracted from the ByteReader and are expected to be packed at the
+// bit width specified.
+func NewBitUnpacker(width uint8, r io.ByteReader) *BitUnpacker {
+	return &BitUnpacker{
+		bitw: width,
+		r:    r,
+	}
+}
+
+// BitUnpacker extracts signed integers, packed at some bit width,
+// from a bitstream.
+type BitUnpacker struct {
+	r     io.ByteReader
+	bitw  uint8
+	bits  uint32
+	nbits uint8
+}
+
+// Next returns the next signed integer from the bitstream.
+func (u *BitUnpacker) Next() (int32, error) {
+	for u.nbits < u.bitw {
+		b, err := u.r.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		u.bits |= uint32(b) << uint8(24-u.nbits)
+		u.nbits += 8
+	}
+
+	out := twosUncomp(u.bits>>(32-u.bitw), u.bitw)
+	u.bits = u.bits << u.bitw
+	u.nbits -= u.bitw
+	return out, nil
 }
 
 func abs(x int32) uint32 {
@@ -105,8 +203,14 @@ func twosComp(v int32, width uint8) uint32 {
 	if v >= 0 {
 		return uint32(v)
 	}
-	widthMask := uint32((1 << width) - 1) // all 1's for the target width
-	return uint32(-(v+1))&widthMask ^ widthMask
+	return (^uint32(-v) + 1) & uint32((1<<width)-1)
+}
+
+func twosUncomp(v uint32, width uint8) int32 {
+	if v&(1<<(width-1)) == 0 {
+		return int32(v) // positive
+	}
+	return -int32((^v + 1) & uint32((1<<width)-1))
 }
 
 func numBits(x uint32) uint8 {

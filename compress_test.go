@@ -1,10 +1,61 @@
 package cptv
 
 import (
+	"bytes"
 	"testing"
 
+	"github.com/TheCacophonyProject/lepton3"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestCompressDecompress(t *testing.T) {
+	emptyFrame := new(lepton3.Frame)
+
+	// Generate a frame with values between 1024 and 8196
+	frame0 := new(lepton3.Frame)
+	const minVal = 1024
+	const maxVal = 8196
+	for y := 0; y < lepton3.FrameRows; y++ {
+		for x := 0; x < lepton3.FrameCols; x++ {
+			frame0[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
+		}
+	}
+
+	// Generate another with small offsets from frame0.
+	frame1 := new(lepton3.Frame)
+	for y := 0; y < lepton3.FrameRows; y++ {
+		for x := 0; x < lepton3.FrameCols; x++ {
+			frame1[y][x] = frame0[y][x] + uint16(x)
+		}
+	}
+
+	// Compress the frames.
+	compressor := NewCompressor(lepton3.FrameCols, lepton3.FrameRows)
+	bitWidth0, frameComp := compressor.Next(emptyFrame, frame0)
+	// first frame has no compression
+	assert.Equal(t, uint8(14), bitWidth0)
+	assert.Equal(t, 33603, len(frameComp))
+	frame0Comp := make([]byte, len(frameComp))
+	copy(frame0Comp, frameComp)
+
+	bitWidth1, frame1Comp := compressor.Next(frame0, frame1)
+	assert.Equal(t, uint8(2), bitWidth1)
+	assert.Equal(t, 4804, len(frame1Comp))
+
+	// Decompress the frames and confirm the output is the same as the original.
+	decompressor := NewDecompressor()
+
+	frame0d := new(lepton3.Frame)
+	err := decompressor.Next(bitWidth0, bytes.NewReader(frame0Comp), frame0d)
+	require.NoError(t, err)
+	assert.Equal(t, frame0, frame0d)
+
+	frame1d := new(lepton3.Frame)
+	err = decompressor.Next(bitWidth1, bytes.NewReader(frame1Comp), frame1d)
+	require.NoError(t, err)
+	assert.Equal(t, frame1, frame1d)
+}
 
 func TestTwosComp(t *testing.T) {
 	tests := []struct {
@@ -12,6 +63,9 @@ func TestTwosComp(t *testing.T) {
 		width    uint8
 		expected uint32
 	}{
+
+		{-1, 4, 15},
+
 		// Width 8
 		{0, 8, 0},
 		{1, 8, 1},
@@ -43,11 +97,10 @@ func TestTwosComp(t *testing.T) {
 	}
 
 	for _, x := range tests {
-		assert.Equal(
-			t,
-			x.expected,
-			twosComp(x.input, x.width),
-			"%d (width=%d)", x.input, x.width,
-		)
+		twos := twosComp(x.input, x.width)
+		assert.Equal(t, x.expected, twos, "twosComp(%d, %d)", x.input, x.width)
+
+		untwos := twosUncomp(twos, x.width)
+		assert.Equal(t, x.input, untwos, "twosUncomp(%d, %d)", twos, x.width)
 	}
 }
