@@ -1,3 +1,17 @@
+// Copyright 2018 The Cacophony Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package cptv
 
 import (
@@ -10,23 +24,8 @@ import (
 )
 
 func TestCompressDecompress(t *testing.T) {
-	// Generate a frame with values between 1024 and 8196
-	frame0 := new(lepton3.Frame)
-	const minVal = 1024
-	const maxVal = 8196
-	for y := 0; y < lepton3.FrameRows; y++ {
-		for x := 0; x < lepton3.FrameCols; x++ {
-			frame0[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
-		}
-	}
-
-	// Generate another with small offsets from frame0.
-	frame1 := new(lepton3.Frame)
-	for y := 0; y < lepton3.FrameRows; y++ {
-		for x := 0; x < lepton3.FrameCols; x++ {
-			frame1[y][x] = frame0[y][x] + uint16(x)
-		}
-	}
+	frame0 := makeTestFrame()
+	frame1 := makeOffsetFrame(frame0)
 
 	// Compress the frames.
 	compressor := NewCompressor()
@@ -101,4 +100,27 @@ func TestTwosComp(t *testing.T) {
 		untwos := twosUncomp(twos, x.width)
 		assert.Equal(t, x.input, untwos, "twosUncomp(%d, %d)", twos, x.width)
 	}
+}
+
+func makeTestFrame() *lepton3.Frame {
+	// Generate a frame with values between 1024 and 8196
+	out := new(lepton3.Frame)
+	const minVal = 1024
+	const maxVal = 8196
+	for y := 0; y < lepton3.FrameRows; y++ {
+		for x := 0; x < lepton3.FrameCols; x++ {
+			out[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
+		}
+	}
+	return out
+}
+
+func makeOffsetFrame(in *lepton3.Frame) *lepton3.Frame {
+	out := new(lepton3.Frame)
+	for y := 0; y < lepton3.FrameRows; y++ {
+		for x := 0; x < lepton3.FrameCols; x++ {
+			out[y][x] = in[y][x] + uint16(x)
+		}
+	}
+	return out
 }
