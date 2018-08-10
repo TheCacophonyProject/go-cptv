@@ -9,27 +9,38 @@ import (
 	"github.com/TheCacophonyProject/lepton3"
 )
 
+// NewCompressor creates a new Compressor.
+func NewCompressor() *Compressor {
+	elems := lepton3.FrameRows * lepton3.FrameCols
+	outBuf := new(bytes.Buffer)
+	outBuf.Grow(2 * elems) // 16 bits per element; worst case
+	return &Compressor{
+		rows:       lepton3.FrameRows,
+		cols:       lepton3.FrameCols,
+		frameDelta: make([]int32, elems),
+		adjDeltas:  make([]int32, elems-1),
+		outBuf:     outBuf,
+		prevFrame:  new(lepton3.Frame),
+	}
+}
+
+// Compressor generates a compressed representation of successive
+// lepton3 Frames, returning CPTV frames.
 type Compressor struct {
 	cols, rows int
 	frameDelta []int32
 	adjDeltas  []int32
 	outBuf     *bytes.Buffer
+	prevFrame  *lepton3.Frame
 }
 
-func NewCompressor(cols, rows int) *Compressor {
-	elems := rows * cols
-	outBuf := new(bytes.Buffer)
-	outBuf.Grow(2 * elems) // 16 bits per element; worst case
-	return &Compressor{
-		rows:       rows,
-		cols:       cols,
-		frameDelta: make([]int32, elems),
-		adjDeltas:  make([]int32, (elems)-1),
-		outBuf:     outBuf,
-	}
-}
-
-func (c *Compressor) Next(prev, curr *lepton3.Frame) (uint8, []byte) {
+// Next takes the next lepton3.Frame in a recording and converts it to
+// a compressed stream of bytes. The bit width used for packing is
+// also returned (this is required for unpacking).
+//
+// IMPORTANT: The returned byte slice is reused and therefore is only
+// valid until the next call to Next.
+func (c *Compressor) Next(curr *lepton3.Frame) (uint8, []byte) {
 	// Generate the interframe delta.
 	// The output is written in a "snaked" fashion to avoid
 	// potentially greater deltas at the edges in the next stage.
@@ -40,7 +51,11 @@ func (c *Compressor) Next(prev, curr *lepton3.Frame) (uint8, []byte) {
 			i += c.cols - 1
 		}
 		for x := 0; x < c.cols; x++ {
-			c.frameDelta[i] = int32(curr[y][x]) - int32(prev[y][x])
+			c.frameDelta[i] = int32(curr[y][x]) - int32(c.prevFrame[y][x])
+			// Now that prevFrame[y][x] has been used, copy the value
+			// for the current frame in for the next call to Next().
+			// TODO: it might be fast to copy() rows separately.
+			c.prevFrame[y][x] = curr[y][x]
 			if y%2 == 0 {
 				i++
 			} else {

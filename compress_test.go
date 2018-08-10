@@ -10,8 +10,6 @@ import (
 )
 
 func TestCompressDecompress(t *testing.T) {
-	emptyFrame := new(lepton3.Frame)
-
 	// Generate a frame with values between 1024 and 8196
 	frame0 := new(lepton3.Frame)
 	const minVal = 1024
@@ -31,15 +29,15 @@ func TestCompressDecompress(t *testing.T) {
 	}
 
 	// Compress the frames.
-	compressor := NewCompressor(lepton3.FrameCols, lepton3.FrameRows)
-	bitWidth0, frameComp := compressor.Next(emptyFrame, frame0)
+	compressor := NewCompressor()
+	bitWidth0, frameComp := compressor.Next(frame0)
 	// first frame has no compression
 	assert.Equal(t, uint8(14), bitWidth0)
 	assert.Equal(t, 33603, len(frameComp))
 	frame0Comp := make([]byte, len(frameComp))
 	copy(frame0Comp, frameComp)
 
-	bitWidth1, frame1Comp := compressor.Next(frame0, frame1)
+	bitWidth1, frame1Comp := compressor.Next(frame1)
 	assert.Equal(t, uint8(2), bitWidth1)
 	assert.Equal(t, 4804, len(frame1Comp))
 

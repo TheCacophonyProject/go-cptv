@@ -10,7 +10,7 @@ import (
 func NewWriter(w io.Writer) *Writer {
 	return &Writer{
 		bldr: NewBuilder(w),
-		comp: NewCompressor(lepton3.FrameCols, lepton3.FrameRows),
+		comp: NewCompressor(),
 	}
 }
 
@@ -40,9 +40,9 @@ func (w *Writer) WriteHeader(deviceName string) error {
 	return w.bldr.WriteHeader(fields)
 }
 
-func (w *Writer) WriteFrame(prevFrame, frame *lepton3.Frame) error {
+func (w *Writer) WriteFrame(frame *lepton3.Frame) error {
 	dt := uint64(time.Since(w.t0))
-	bitWidth, compFrame := w.comp.Next(prevFrame, frame)
+	bitWidth, compFrame := w.comp.Next(frame)
 	fields := NewFieldWriter()
 	fields.Uint32(Offset, uint32(dt/1000))
 	fields.Uint8(BitWidth, uint8(bitWidth))
