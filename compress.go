@@ -61,7 +61,7 @@ func (c *Compressor) Next(curr *lepton3.Frame) (uint8, []byte) {
 	var i int
 	for y := 0; y < c.rows; y++ {
 		i = y * c.cols
-		if y%2 == 1 {
+		if y&1 == 1 {
 			i += c.cols - 1
 		}
 		for x := 0; x < c.cols; x++ {
@@ -70,7 +70,7 @@ func (c *Compressor) Next(curr *lepton3.Frame) (uint8, []byte) {
 			// for the current frame in for the next call to Next().
 			// TODO: it might be fast to copy() rows separately.
 			c.prevFrame[y][x] = curr[y][x]
-			if y%2 == 0 {
+			if y&1 == 0 {
 				i++
 			} else {
 				i--
@@ -140,7 +140,7 @@ func (d *Decompressor) Next(bitWidth uint8, compressed ByteReaderReader, out *le
 		y := i / lepton3.FrameCols
 		x := i % lepton3.FrameCols
 		// Deltas are "snaked" so work backwards through every second row.
-		if y%2 == 1 {
+		if y&1 == 1 {
 			x = lepton3.FrameCols - x - 1
 		}
 
