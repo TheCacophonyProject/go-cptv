@@ -49,7 +49,7 @@ import (
 )
 
 
-func readFrames() ([]*lepton3.Frame), error) {
+func readFrames() ([]*lepton3.Frame, error) {
     f, err := os.Open("some.cptv")
     if err != nil {
         return nil, err
