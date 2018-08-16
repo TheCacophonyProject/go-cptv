@@ -17,6 +17,7 @@ package cptv
 import (
 	"bufio"
 	"io"
+	"io/ioutil"
 	"time"
 
 	"github.com/TheCacophonyProject/lepton3"
@@ -74,4 +75,22 @@ func (r *Reader) ReadFrame(out *lepton3.Frame) error {
 		return err
 	}
 	return r.decomp.Next(bitWidth, &nReader{frameReader}, out)
+}
+
+// FrameCount Returns the remaining number of frames in a CPTV file.
+// The remaining frames will be consumed in this process
+func (r *Reader) FrameCount() (int, error) {
+	count := 0
+	for {
+		_, fr, err := r.parser.Frame()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return count, err
+		}
+		io.Copy(ioutil.Discard, fr)
+		count++
+	}
+	return count, nil
 }
