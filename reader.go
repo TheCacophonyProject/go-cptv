@@ -77,8 +77,8 @@ func (r *Reader) ReadFrame(out *lepton3.Frame) error {
 	return r.decomp.Next(bitWidth, &nReader{frameReader}, out)
 }
 
-// FrameCount Returns the remaining number of frames in a CPTV file.
-// The remaining frames will be consumed in this process
+// FrameCount returns the remaining number of frames in a CPTV file.
+// After this call, all remaining frames will have been consumed.
 func (r *Reader) FrameCount() (int, error) {
 	count := 0
 	for {
