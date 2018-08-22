@@ -35,19 +35,15 @@ func runMain() error {
 	if len(os.Args) != 2 {
 		return fmt.Errorf("usage: %s <filename>", os.Args[0])
 	}
-	file, err := os.Open(os.Args[1])
+
+	fr, err := cptv.NewFileReader(os.Args[1])
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer fr.Close()
 
-	r, err := cptv.NewReader(file)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Timestamp:   ", r.Timestamp())
-	fmt.Println("Device Name: ", r.DeviceName())
+	fmt.Println("Timestamp:   ", fr.Timestamp())
+	fmt.Println("Device Name: ", fr.DeviceName())
 
 	// Read the frames and get a frame count. This is an illustration of
 	// frame reading - the r.FrameCount method will do the same thing (and
@@ -55,7 +51,7 @@ func runMain() error {
 	frames := 0
 	var frame lepton3.Frame
 	for {
-		err := r.ReadFrame(&frame)
+		err := fr.ReadFrame(&frame)
 		if err != nil {
 			if err == io.EOF {
 				fmt.Print("<EOF>")
