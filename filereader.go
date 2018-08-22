@@ -28,6 +28,7 @@ func NewFileReader(filename string) (*FileReader, error) {
 	br := bufio.NewReader(f)
 	r, err := NewReader(br)
 	if err != nil {
+		f.Close()
 		return nil, err
 	}
 	return &FileReader{

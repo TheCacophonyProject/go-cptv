@@ -49,12 +49,12 @@ func runMain() error {
 	// frame reading - the r.FrameCount method will do the same thing (and
 	// will similarly leave the file pointer at EOF)
 	frames := 0
-	var frame lepton3.Frame
+	frame := new(lepton3.Frame)
 	for {
-		err := fr.ReadFrame(&frame)
+		err := fr.ReadFrame(frame)
 		if err != nil {
 			if err == io.EOF {
-				fmt.Print("<EOF>")
+				fmt.Print(".")
 				frames++ // the last valid read returns EOF
 				break
 			}
@@ -62,9 +62,6 @@ func runMain() error {
 		}
 		frames++
 		fmt.Print(".")
-		if frames%80 == 0 {
-			fmt.Print("\n")
-		}
 	}
 	fmt.Print("\n")
 	fmt.Println("Frame Count: ", frames)
