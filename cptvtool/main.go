@@ -1,5 +1,3 @@
-package main
-
 // Copyright 2018 The Cacophony Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +12,15 @@ package main
 // See the License for the specific language governing permissions and
 // limitations under the License.package main
 
+package main
+
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/TheCacophonyProject/go-cptv"
+	"github.com/TheCacophonyProject/lepton3"
 )
 
 func main() {
@@ -40,52 +40,38 @@ func runMain() error {
 		return err
 	}
 	defer file.Close()
-	bfile := bufio.NewReader(file)
-	r, err := cptv.NewParser(bfile)
-	if err != nil {
-		return err
-	}
-	fields, err := r.Header()
+
+	r, err := cptv.NewReader(file)
 	if err != nil {
 		return err
 	}
 
-	ts, err := fields.Timestamp(cptv.Timestamp)
-	fmt.Println("Timestamp:   ", ts, err)
-	xres, err := fields.Uint32(cptv.XResolution)
-	fmt.Println("X Resolution:", xres, err)
-	yres, err := fields.Uint32(cptv.YResolution)
-	fmt.Println("YResolution: ", yres, err)
-	cmpr, err := fields.Uint8(cptv.Compression)
-	fmt.Println("Compression: ", cmpr, err)
-	devc, err := fields.String(cptv.DeviceName)
-	fmt.Println("DeviceName: ", devc, err)
+	fmt.Println("Timestamp:   ", r.Timestamp())
+	fmt.Println("Device Name: ", r.DeviceName())
 
+	// Read the frames and get a frame count. This is an illustration of
+	// frame reading - the r.FrameCount method will do the same thing (and
+	// will similarly leave the file pointer at EOF)
 	frames := 0
+	var frame lepton3.Frame
 	for {
-		fields, frameReader, err := r.Frame()
-
-		if err == io.EOF {
-			break
-		} else if err != nil {
+		err := r.ReadFrame(&frame)
+		if err != nil {
+			if err == io.EOF {
+				fmt.Print("<EOF>")
+				frames++ // the last valid read returns EOF
+				break
+			}
 			return err
 		}
-
-		// skip past the frame
-		frameLen, err := fields.Uint32(cptv.FrameSize)
-		buf := make([]byte, frameLen)
-		bytesLeft := frameLen
-		for frameLen > 0 {
-			n, err := frameReader.Read(buf)
-			if err == io.EOF {
-				break
-			} else if err != nil {
-				return err
-			}
-			bytesLeft = bytesLeft - uint32(n)
-		}
 		frames++
+		fmt.Print(".")
+		if frames%80 == 0 {
+			fmt.Print("\n")
+		}
 	}
-	fmt.Println("Frames:      ", frames)
+	fmt.Print("\n")
+	fmt.Println("Frame Count: ", frames)
+
 	return nil
 }
