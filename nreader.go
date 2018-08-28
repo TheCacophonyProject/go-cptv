@@ -43,10 +43,6 @@ func (r *nReader) ReadByte() (byte, error) {
 }
 
 // ReadN reads n bytes and returns as a byte array of size n.
-// Note: io.Reader can return n,EOF from a read to the end of a file,
-//  even when there was no attempt to go past the end. Because we're
-//  not returning 'bytes read', we will return err=nil in the case
-//  where the requested number of bytes were sucessfully read.
 func (r *nReader) ReadN(n int) ([]byte, error) {
 	buf := make([]byte, n)
 	i := 0
@@ -55,7 +51,13 @@ func (r *nReader) ReadN(n int) ([]byte, error) {
 		i += sz
 		if err != nil {
 			if err == io.EOF && i == n {
-				break // this is OK, we have read up to the end of the stream
+				// Read can return n,EOF from a read to the end of a file,
+				// even when there was no attempt to go past the end. This
+				// is normal io.Reader behavior. Because we're not returning
+				// 'bytes read', we will break here and return err=nil in the
+				// case where the requested number of bytes were sucessfully
+				// read.
+				break
 			}
 			return nil, err
 		}
