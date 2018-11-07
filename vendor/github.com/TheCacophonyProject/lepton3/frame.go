@@ -1,4 +1,4 @@
-// Copyright 2017 The Cacophony Project. All rights reserved.
+// Copyright 2018 The Cacophony Project. All rights reserved.
 // Use of this source code is governed by the Apache License Version 2.0;
 // see the LICENSE file for further details.
 
@@ -6,80 +6,43 @@ package lepton3
 
 import (
 	"encoding/binary"
-	"fmt"
 )
 
-func newFrame() *frame {
-	f := &frame{
-		segmentPackets: make([][]byte, packetsPerSegment),
-		framePackets:   make([][]byte, packetsPerFrame),
-	}
-	f.reset()
-	return f
+// RawFrame hold the raw bytes for single frame. This is helpful for
+// transferring frames around. It can be converted to the more useful
+// Frame.
+type RawFrame [packetsPerFrame * vospiDataSize]byte
+
+// Frame represents the thermal readings for a single frame.
+type Frame struct {
+	Pix    [FrameRows][FrameCols]uint16
+	Status Telemetry
 }
 
-type frame struct {
-	packetNum      int
-	segmentNum     int
-	segmentPackets [][]byte
-	framePackets   [][]byte
-}
+// FramesHz define the approximate number of frames per second emitted by the Lepton 3 camera.
+const FramesHz = 9
 
-func (f *frame) reset() {
-	f.packetNum = -1
-	f.segmentNum = 0
-}
-
-func (f *frame) nextPacket(packetNum int, packet []byte) (bool, error) {
-	if !f.sequential(packetNum) {
-		return false, fmt.Errorf("out of order packet: %d -> %d", f.packetNum, packetNum)
+// ToFrame converts a RawFrame to a Frame.
+func (rf *RawFrame) ToFrame(out *Frame) error {
+	if err := ParseTelemetry(rf[:], &out.Status); err != nil {
+		return err
 	}
 
-	// Store the packet data in current segment
-	f.segmentPackets[packetNum] = packet[vospiHeaderSize:]
-
-	switch packetNum {
-	case segmentPacketNum:
-		segmentNum := int(packet[0] >> 4)
-		if segmentNum > 4 {
-			return false, fmt.Errorf("invalid segment number: %d", segmentNum)
-		}
-		if segmentNum > 0 && segmentNum != f.segmentNum+1 {
-			// XXX this might not warrant a resync but certainly ignoring of the segment
-			return false, fmt.Errorf("out of order segment")
-		}
-		f.segmentNum = segmentNum
-	case maxPacketNum:
-		if f.segmentNum > 0 {
-			// This should be fast as only slice headers for the
-			// segment are being copied, not the packet data itself.
-			copy(f.framePackets[(f.segmentNum-1)*packetsPerSegment:], f.segmentPackets)
-		}
-		if f.segmentNum == 4 {
-			// Complete frame!
-			return true, nil
+	rawPix := rf[telemetryPacketCount*vospiDataSize:]
+	i := 0
+	for y := 0; y < FrameRows; y++ {
+		for x := 0; x < FrameCols; x++ {
+			out.Pix[y][x] = binary.BigEndian.Uint16(rawPix[i : i+2])
+			i += 2
 		}
 	}
-	f.packetNum = packetNum
-	return false, nil
+	return nil
 }
 
-func (f *frame) sequential(packetNum int) bool {
-	if packetNum == 0 && f.packetNum == maxPacketNum {
-		return true
-	}
-	return packetNum == f.packetNum+1
-}
-
-func (f *frame) output(outFrame *Frame) {
-	for packetNum, packet := range f.framePackets {
-		for i := 0; i < vospiDataSize; i += 2 {
-			x := i >> 1 // divide 2
-			if packetNum%2 == 1 {
-				x += colsPerPacket
-			}
-			y := packetNum >> 1 // divide 2
-			outFrame[y][x] = binary.BigEndian.Uint16(packet[i : i+2])
-		}
+// Copy sets current frame as other frame
+func (fr *Frame) Copy(orig *Frame) {
+	fr.Status = orig.Status
+	for y := 0; y < FrameRows; y++ {
+		copy(fr.Pix[y][:], orig.Pix[y][:])
 	}
 }
