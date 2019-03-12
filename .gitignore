@@ -1,0 +1,9 @@
+# Ignore the VS Code generated directory.
+/.vscode/
+
+# Ignore the debug files created by VS Code on Windows.  The double asterisk means anywhere in the repository.
+**debug
+
+# Ignore executables
+/cmd/createCPTVFile/createCPTVFile
+/cmd/createCPTVFile/createCPTVFile.exe
