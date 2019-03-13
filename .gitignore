@@ -5,5 +5,6 @@
 **debug
 
 # Ignore executables
-/cmd/createCPTVFile/createCPTVFile
-/cmd/createCPTVFile/createCPTVFile.exe
+/cmd/createcptv/createcptv
+/cmd/createcptv/createcptv.exe
+/cmd/createcptv/*.cptv
