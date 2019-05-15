@@ -95,6 +95,26 @@ func (r *Reader) Longitude() float32 {
 	return long
 }
 
+// LocTimestamp returns the timestamp at which the location of the device
+func (r *Reader) LocTimestamp() time.Time {
+	ts, _ := r.header.Timestamp(LocTimestamp)
+	return ts
+}
+
+// Altitude returns the altitude part of the location of the device
+// when this CPTV file was recorded.
+func (r *Reader) Altitude() float32 {
+	long, _ := r.header.Float32(Altitude)
+	return long
+}
+
+// Precision returns the estimated precision of the location of the device
+// when this CPTV file was recorded.
+func (r *Reader) Precision() float32 {
+	long, _ := r.header.Float32(Precision)
+	return long
+}
+
 // ReadFrame extracts and decompresses the next frame in a CPTV
 // recording. At the end of the recording an io.EOF error will be
 // returned.
