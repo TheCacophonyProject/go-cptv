@@ -62,7 +62,7 @@ func createCPTVFile(cptvFileName string) {
 		Longitude:    174.76667,
 		LocTimestamp: lts,
 		Altitude:     200,
-		Accuracy:     0.5,
+		Accuracy:     10,
 	}
 	w.WriteHeader(header)
 
