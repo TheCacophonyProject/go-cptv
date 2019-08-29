@@ -40,6 +40,7 @@ type Writer struct {
 type Header struct {
 	Timestamp    time.Time
 	DeviceName   string
+	DeviceID     int
 	PreviewSecs  int
 	MotionConfig string
 	Latitude     float32
@@ -66,6 +67,9 @@ func (w *Writer) WriteHeader(header Header) error {
 		if err != nil {
 			return err
 		}
+	}
+	if header.DeviceID > 0 {
+		fields.Uint32(DeviceID, uint32(header.DeviceID))
 	}
 
 	fields.Uint8(PreviewSecs, uint8(header.PreviewSecs))
