@@ -68,6 +68,7 @@ func (w *Writer) WriteHeader(header Header) error {
 			return err
 		}
 	}
+
 	if header.DeviceID > 0 {
 		fields.Uint32(DeviceID, uint32(header.DeviceID))
 	}
