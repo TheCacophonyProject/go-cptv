@@ -37,6 +37,7 @@ func TestRoundTripHeaderDefaults(t *testing.T) {
 	assert.Equal(t, 2, r.Version())
 	assert.True(t, time.Since(r.Timestamp()) < time.Minute) // "now" was used
 	assert.Equal(t, "", r.DeviceName())
+	assert.Equal(t, 0, r.DeviceID())
 	assert.Equal(t, 0, r.PreviewSecs())
 	assert.Equal(t, "", r.MotionConfig())
 	assert.Equal(t, float32(0.0), r.Latitude())
@@ -56,6 +57,7 @@ func TestRoundTripHeader(t *testing.T) {
 	header := Header{
 		Timestamp:    ts,
 		DeviceName:   "nz42",
+		DeviceID:     22,
 		PreviewSecs:  8,
 		MotionConfig: "keep on movin",
 		Latitude:     -36.86667,
@@ -71,6 +73,7 @@ func TestRoundTripHeader(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, ts, r.Timestamp().UTC())
 	assert.Equal(t, "nz42", r.DeviceName())
+	assert.Equal(t, 22, r.DeviceID())
 	assert.Equal(t, 8, r.PreviewSecs())
 	assert.Equal(t, "keep on movin", r.MotionConfig())
 	assert.Equal(t, float32(-36.86667), r.Latitude())

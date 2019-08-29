@@ -67,6 +67,14 @@ func (r *Reader) DeviceName() string {
 	return name
 }
 
+// DeviceID returns the device id field from the CPTV
+// recording. Returns an empty int if the device id field wasn't
+// present.
+func (r *Reader) DeviceID() int {
+	id, _ := r.header.Uint32(DeviceID)
+	return int(id)
+}
+
 // PreviewSecs returns the number of seconds included in the recording
 // before motion was detected. Returns 0 if this field is not included.
 func (r *Reader) PreviewSecs() int {

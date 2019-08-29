@@ -56,6 +56,7 @@ func createCPTVFile(cptvFileName string) {
 	header := cptv.Header{
 		Timestamp:    ts,
 		DeviceName:   "nz42",
+		DeviceID:     90,
 		PreviewSecs:  8,
 		MotionConfig: "keep on movin",
 		Latitude:     -36.86667,
@@ -95,6 +96,7 @@ func openAndDisplayCPTVFileContents(cptvFileName string) {
 	fmt.Println("\tVersion =", r.Version())
 	fmt.Println("\tTimeStamp =", r.Timestamp().UTC())
 	fmt.Println("\tDeviceName =", r.DeviceName())
+	fmt.Println("\tDeviceID =", r.DeviceID())
 	fmt.Println("\tPreviewSecs =", r.PreviewSecs())
 	fmt.Println("\tMotionConfig =", r.MotionConfig())
 	fmt.Println("\tLatitude =", r.Latitude())

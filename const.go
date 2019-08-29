@@ -27,6 +27,7 @@ const (
 	YResolution  byte = 'Y'
 	Compression  byte = 'C'
 	DeviceName   byte = 'D'
+	DeviceID     byte = 'I'
 	MotionConfig byte = 'M'
 	PreviewSecs  byte = 'P'
 	Latitude     byte = 'L'
