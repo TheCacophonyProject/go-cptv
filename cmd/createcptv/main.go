@@ -19,6 +19,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/TheCacophonyProject/go-cptv"
 	"github.com/TheCacophonyProject/lepton3"
 )
 
