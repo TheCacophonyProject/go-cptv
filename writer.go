@@ -22,7 +22,7 @@ import (
 )
 
 // NewWriter creates and returns a new Writer component
-func NewWriter(w io.Writer, c cptvframe.CameraResolution) *Writer {
+func NewWriter(w io.Writer, c cptvframe.CameraSpec) *Writer {
 	return &Writer{
 		bldr: NewBuilder(w),
 		comp: NewCompressor(c),

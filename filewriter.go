@@ -23,7 +23,7 @@ import (
 
 // NewFileWriter creates file 'filename' and returns a new FileWriter
 // with underlying buffer (bufio) Writer
-func NewFileWriter(filename string, c cptvframe.CameraResolution) (*FileWriter, error) {
+func NewFileWriter(filename string, c cptvframe.CameraSpec) (*FileWriter, error) {
 	f, err := os.Create(filename)
 	if err != nil {
 		return nil, err

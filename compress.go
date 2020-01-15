@@ -24,7 +24,7 @@ import (
 )
 
 // NewCompressor creates a new Compressor.
-func NewCompressor(c cptvframe.CameraResolution) *Compressor {
+func NewCompressor(c cptvframe.CameraSpec) *Compressor {
 	elems := c.ResX() * c.ResY()
 	outBuf := new(bytes.Buffer)
 	outBuf.Grow(2 * elems) // 16 bits per element; worst case
@@ -101,7 +101,7 @@ func (c *Compressor) Next(curr *cptvframe.Frame) (uint8, []byte) {
 }
 
 // NewDecompressor creates a new Decompressor.
-func NewDecompressor(c cptvframe.CameraResolution) *Decompressor {
+func NewDecompressor(c cptvframe.CameraSpec) *Decompressor {
 	decomp := &Decompressor{
 		cols:       c.ResX(),
 		rows:       c.ResY(),

@@ -113,7 +113,7 @@ func TestTwosComp(t *testing.T) {
 	}
 }
 
-func makeTestFrame(c cptvframe.CameraResolution) *cptvframe.Frame {
+func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 	// Generate a frame with values between 1024 and 8196
 	out := cptvframe.NewFrame(c)
 	const minVal = 1024
@@ -127,7 +127,7 @@ func makeTestFrame(c cptvframe.CameraResolution) *cptvframe.Frame {
 	return out
 }
 
-func makeOffsetFrame(c cptvframe.CameraResolution, in *cptvframe.Frame) *cptvframe.Frame {
+func makeOffsetFrame(c cptvframe.CameraSpec, in *cptvframe.Frame) *cptvframe.Frame {
 	out := cptvframe.NewFrame(c)
 
 	for y, row := range out.Pix {

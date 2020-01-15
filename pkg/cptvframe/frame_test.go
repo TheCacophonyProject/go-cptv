@@ -24,10 +24,6 @@ func (cam *TestCamera) ResY() int {
 	return 320
 }
 
-func (cam *TestCamera) FPS() int {
-	return 10
-}
-
 func TestFrameCopy(t *testing.T) {
 
 	camera := new(TestCamera)

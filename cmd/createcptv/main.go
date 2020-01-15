@@ -37,7 +37,7 @@ func (cam *TestCamera) ResY() int {
 const cptvFileName = "v2.cptv"
 
 // Create a frame for playing with.
-func makeTestFrame(c cptvframe.CameraResolution) *cptvframe.Frame {
+func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 	// Generate a frame with values between 1024 and 8196
 	out := cptvframe.NewFrame(c)
 	const minVal = 1024

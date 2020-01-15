@@ -1,22 +1,8 @@
-// Copyright 2018 The Cacophony Project. All rights reserved.
+// Copyright 2020 The Cacophony Project. All rights reserved.
 // Use of this source code is governed by the Apache License Version 2.0;
 // see the LICENSE file for further details.
 
 package cptvframe
-
-import (
-	"time"
-)
-
-type Telemetry struct {
-	TimeOn       time.Duration
-	FFCState     string
-	FrameCount   int
-	FrameMean    uint16
-	TempC        float64
-	LastFFCTempC float64
-	LastFFCTime  time.Duration
-}
 
 // Frame represents the thermal readings for a single frame.
 type Frame struct {
@@ -24,14 +10,8 @@ type Frame struct {
 	Status Telemetry
 }
 
-// Interface that all thermal camera implementations should implement
-type CameraResolution interface {
-	ResX() int
-	ResY() int
-}
-
 // Creates a new frame sized for the provided camera implementation
-func NewFrame(c CameraResolution) *Frame {
+func NewFrame(c CameraSpec) *Frame {
 	frame := new(Frame)
 	frame.Pix = make([][]uint16, c.ResY())
 	for i := range frame.Pix {
