@@ -18,17 +18,28 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/TheCacophonyProject/lepton3"
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+type TestCamera struct {
+}
+
+func (cam *TestCamera) ResX() int {
+	return 160
+}
+func (cam *TestCamera) ResY() int {
+	return 120
+}
+
 func TestCompressDecompress(t *testing.T) {
-	frame0 := makeTestFrame()
-	frame1 := makeOffsetFrame(frame0)
+	camera := new(TestCamera)
+	frame0 := makeTestFrame(camera)
+	frame1 := makeOffsetFrame(camera, frame0)
 
 	// Compress the frames.
-	compressor := NewCompressor()
+	compressor := NewCompressor(camera)
 	bitWidth0, frameComp := compressor.Next(frame0)
 	// first frame has no compression
 	assert.Equal(t, uint8(14), bitWidth0)
@@ -41,14 +52,14 @@ func TestCompressDecompress(t *testing.T) {
 	assert.Equal(t, 4804, len(frame1Comp))
 
 	// Decompress the frames and confirm the output is the same as the original.
-	decompressor := NewDecompressor()
+	decompressor := NewDecompressor(camera)
 
-	frame0d := new(lepton3.Frame)
+	frame0d := cptvframe.NewFrame(camera)
 	err := decompressor.Next(bitWidth0, bytes.NewReader(frame0Comp), frame0d)
 	require.NoError(t, err)
 	assert.Equal(t, frame0, frame0d)
 
-	frame1d := new(lepton3.Frame)
+	frame1d := cptvframe.NewFrame(camera)
 	err = decompressor.Next(bitWidth1, bytes.NewReader(frame1Comp), frame1d)
 	require.NoError(t, err)
 	assert.Equal(t, frame1, frame1d)
@@ -102,23 +113,25 @@ func TestTwosComp(t *testing.T) {
 	}
 }
 
-func makeTestFrame() *lepton3.Frame {
+func makeTestFrame(c cptvframe.CameraResolution) *cptvframe.Frame {
 	// Generate a frame with values between 1024 and 8196
-	out := new(lepton3.Frame)
+	out := cptvframe.NewFrame(c)
 	const minVal = 1024
 	const maxVal = 8196
-	for y := 0; y < lepton3.FrameRows; y++ {
-		for x := 0; x < lepton3.FrameCols; x++ {
+	for y, row := range out.Pix {
+		for x, _ := range row {
 			out.Pix[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
 		}
 	}
+
 	return out
 }
 
-func makeOffsetFrame(in *lepton3.Frame) *lepton3.Frame {
-	out := new(lepton3.Frame)
-	for y := 0; y < lepton3.FrameRows; y++ {
-		for x := 0; x < lepton3.FrameCols; x++ {
+func makeOffsetFrame(c cptvframe.CameraResolution, in *cptvframe.Frame) *cptvframe.Frame {
+	out := cptvframe.NewFrame(c)
+
+	for y, row := range out.Pix {
+		for x, _ := range row {
 			out.Pix[y][x] = in.Pix[y][x] + uint16(x)
 		}
 	}

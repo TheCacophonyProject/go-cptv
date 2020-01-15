@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TheCacophonyProject/lepton3"
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,7 +33,8 @@ func TestReadV1File(t *testing.T) {
 	assert.Equal(t, "livingsprings03", r.DeviceName())
 	assert.Equal(t, time.Date(2018, 9, 6, 9, 21, 25, 0, time.UTC), r.Timestamp().UTC().Truncate(time.Second))
 
-	frame := new(lepton3.Frame)
+	camera := new(TestCamera)
+	frame := cptvframe.NewFrame(camera)
 	count := 0
 	for {
 		err := r.ReadFrame(frame)

@@ -20,15 +20,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TheCacophonyProject/lepton3"
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRoundTripHeaderDefaults(t *testing.T) {
+	camera := new(TestCamera)
+
 	cptvBytes := new(bytes.Buffer)
 
-	w := NewWriter(cptvBytes)
+	w := NewWriter(cptvBytes, camera)
 	require.NoError(t, w.WriteHeader(Header{}))
 	require.NoError(t, w.Close())
 
@@ -49,11 +51,13 @@ func TestRoundTripHeaderDefaults(t *testing.T) {
 }
 
 func TestRoundTripHeader(t *testing.T) {
+	camera := new(TestCamera)
+
 	ts := time.Date(2016, 5, 4, 3, 2, 1, 0, time.UTC)
 	lts := time.Date(2019, 5, 20, 9, 8, 7, 0, time.UTC)
 	cptvBytes := new(bytes.Buffer)
 
-	w := NewWriter(cptvBytes)
+	w := NewWriter(cptvBytes, camera)
 	header := Header{
 		Timestamp:    ts,
 		DeviceName:   "nz42",
@@ -85,10 +89,11 @@ func TestRoundTripHeader(t *testing.T) {
 }
 
 func TestReaderFrameCount(t *testing.T) {
-	frame := makeTestFrame()
+	camera := new(TestCamera)
+	frame := makeTestFrame(camera)
 	cptvBytes := new(bytes.Buffer)
 
-	w := NewWriter(cptvBytes)
+	w := NewWriter(cptvBytes, camera)
 	require.NoError(t, w.WriteHeader(Header{}))
 	require.NoError(t, w.WriteFrame(frame))
 	require.NoError(t, w.WriteFrame(frame))
@@ -103,21 +108,22 @@ func TestReaderFrameCount(t *testing.T) {
 }
 
 func TestFrameRoundTrip(t *testing.T) {
-	frame0 := makeTestFrame()
+	camera := new(TestCamera)
+	frame0 := makeTestFrame(camera)
 	frame0.Status.TimeOn = 60 * time.Second
 	frame0.Status.LastFFCTime = 30 * time.Second
 
-	frame1 := makeOffsetFrame(frame0)
+	frame1 := makeOffsetFrame(camera, frame0)
 	frame1.Status.TimeOn = 61 * time.Second
 	frame1.Status.LastFFCTime = 31 * time.Second
 
-	frame2 := makeOffsetFrame(frame1)
+	frame2 := makeOffsetFrame(camera, frame1)
 	frame2.Status.TimeOn = 62 * time.Second
 	frame2.Status.LastFFCTime = 32 * time.Second
 
 	cptvBytes := new(bytes.Buffer)
 
-	w := NewWriter(cptvBytes)
+	w := NewWriter(cptvBytes, camera)
 	require.NoError(t, w.WriteHeader(Header{}))
 	require.NoError(t, w.WriteFrame(frame0))
 	require.NoError(t, w.WriteFrame(frame1))
@@ -127,7 +133,7 @@ func TestFrameRoundTrip(t *testing.T) {
 	r, err := NewReader(cptvBytes)
 	require.NoError(t, err)
 
-	frameD := new(lepton3.Frame)
+	frameD := cptvframe.NewFrame(camera)
 	require.NoError(t, r.ReadFrame(frameD))
 	assert.Equal(t, frame0, frameD)
 	require.NoError(t, r.ReadFrame(frameD))

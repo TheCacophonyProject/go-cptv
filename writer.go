@@ -18,14 +18,14 @@ import (
 	"io"
 	"time"
 
-	"github.com/TheCacophonyProject/lepton3"
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 )
 
 // NewWriter creates and returns a new Writer component
-func NewWriter(w io.Writer) *Writer {
+func NewWriter(w io.Writer, c cptvframe.CameraResolution) *Writer {
 	return &Writer{
 		bldr: NewBuilder(w),
-		comp: NewCompressor(),
+		comp: NewCompressor(c),
 	}
 }
 
@@ -58,8 +58,8 @@ func (w *Writer) WriteHeader(header Header) error {
 	}
 	fields := NewFieldWriter()
 	fields.Timestamp(Timestamp, t)
-	fields.Uint32(XResolution, lepton3.FrameCols)
-	fields.Uint32(YResolution, lepton3.FrameRows)
+	fields.Uint32(XResolution, uint32(w.comp.cols))
+	fields.Uint32(YResolution, uint32(w.comp.rows))
 	fields.Uint8(Compression, 1)
 
 	if len(header.DeviceName) > 0 {
@@ -103,7 +103,7 @@ func (w *Writer) WriteHeader(header Header) error {
 }
 
 // WriteFrame writes a CPTV frame
-func (w *Writer) WriteFrame(frame *lepton3.Frame) error {
+func (w *Writer) WriteFrame(frame *cptvframe.Frame) error {
 	bitWidth, compFrame := w.comp.Next(frame)
 	fields := NewFieldWriter()
 	fields.Uint32(TimeOn, durationToMillis(frame.Status.TimeOn))

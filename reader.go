@@ -20,7 +20,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/TheCacophonyProject/lepton3"
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 )
 
 // NewReader returns a new Reader from the io.Reader given.
@@ -35,7 +35,7 @@ func NewReader(r io.Reader) (*Reader, error) {
 	}
 	return &Reader{
 		parser: parser,
-		decomp: NewDecompressor(),
+		decomp: NewDecompressor(header),
 		header: header,
 	}, nil
 }
@@ -128,7 +128,7 @@ func (r *Reader) Accuracy() float32 {
 // ReadFrame extracts and decompresses the next frame in a CPTV
 // recording. At the end of the recording an io.EOF error will be
 // returned.
-func (r *Reader) ReadFrame(out *lepton3.Frame) error {
+func (r *Reader) ReadFrame(out *cptvframe.Frame) error {
 	fields, frameReader, err := r.parser.Frame()
 	if err != nil {
 		return err

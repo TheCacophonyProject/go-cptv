@@ -20,41 +20,41 @@ import (
 	"io"
 	"math"
 
-	"github.com/TheCacophonyProject/lepton3"
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 )
 
 // NewCompressor creates a new Compressor.
-func NewCompressor() *Compressor {
-	elems := lepton3.FrameRows * lepton3.FrameCols
+func NewCompressor(c cptvframe.CameraResolution) *Compressor {
+	elems := c.ResX() * c.ResY()
 	outBuf := new(bytes.Buffer)
 	outBuf.Grow(2 * elems) // 16 bits per element; worst case
 	return &Compressor{
-		rows:       lepton3.FrameRows,
-		cols:       lepton3.FrameCols,
+		rows:       c.ResY(),
+		cols:       c.ResX(),
 		frameDelta: make([]int32, elems),
 		adjDeltas:  make([]int32, elems-1),
 		outBuf:     outBuf,
-		prevFrame:  new(lepton3.Frame),
+		prevFrame:  cptvframe.NewFrame(c),
 	}
 }
 
 // Compressor generates a compressed representation of successive
-// lepton3 Frames, returning CPTV frames.
+// Frames, returning CPTV frames.
 type Compressor struct {
 	cols, rows int
 	frameDelta []int32
 	adjDeltas  []int32
 	outBuf     *bytes.Buffer
-	prevFrame  *lepton3.Frame
+	prevFrame  *cptvframe.Frame
 }
 
-// Next takes the next lepton3.Frame in a recording and converts it to
+// Next takes the next Frame in a recording and converts it to
 // a compressed stream of bytes. The bit width used for packing is
 // also returned (this is required for unpacking).
 //
 // IMPORTANT: The returned byte slice is reused and therefore is only
 // valid until the next call to Next.
-func (c *Compressor) Next(curr *lepton3.Frame) (uint8, []byte) {
+func (c *Compressor) Next(curr *cptvframe.Frame) (uint8, []byte) {
 	// Generate the interframe delta.
 	// The output is written in a "snaked" fashion to avoid
 	// potentially greater deltas at the edges in the next stage.
@@ -101,21 +101,27 @@ func (c *Compressor) Next(curr *lepton3.Frame) (uint8, []byte) {
 }
 
 // NewDecompressor creates a new Decompressor.
-func NewDecompressor() *Decompressor {
-	return &Decompressor{
-		rows:       lepton3.FrameRows,
-		cols:       lepton3.FrameCols,
-		pixelCount: lepton3.FrameRows * lepton3.FrameCols,
-		prevFrame:  new(lepton3.Frame),
+func NewDecompressor(c cptvframe.CameraResolution) *Decompressor {
+	decomp := &Decompressor{
+		cols:       c.ResX(),
+		rows:       c.ResY(),
+		pixelCount: c.ResX() * c.ResY(),
+		prevFrame:  cptvframe.NewFrame(c),
 	}
+	decomp.deltas = make([][]int32, c.ResY())
+	for i := range decomp.deltas {
+		decomp.deltas[i] = make([]int32, c.ResX())
+	}
+	return decomp
+
 }
 
 // Decompressor is used to decompress successive CPTV frames. See the
 // Next() method.
 type Decompressor struct {
 	cols, rows, pixelCount int
-	prevFrame              *lepton3.Frame
-	deltas                 [lepton3.FrameRows][lepton3.FrameCols]int32
+	prevFrame              *cptvframe.Frame
+	deltas                 [][]int32
 }
 
 // ByteReaderReader combines io.Reader and io.ByteReader.
@@ -126,8 +132,8 @@ type ByteReaderReader interface {
 
 // Next reads of stream of bytes as a ByteReaderReader and
 // decompresses them using the bit width provided into the
-// lepton3.Frame provided.
-func (d *Decompressor) Next(bitWidth uint8, compressed ByteReaderReader, out *lepton3.Frame) error {
+// Frame provided.
+func (d *Decompressor) Next(bitWidth uint8, compressed ByteReaderReader, out *cptvframe.Frame) error {
 	var v int32
 	err := binary.Read(compressed, binary.LittleEndian, &v)
 	if err != nil {
@@ -137,11 +143,11 @@ func (d *Decompressor) Next(bitWidth uint8, compressed ByteReaderReader, out *le
 	unpacker := NewBitUnpacker(bitWidth, compressed)
 	d.deltas[0][0] = v
 	for i := 1; i < d.pixelCount; i++ {
-		y := i / lepton3.FrameCols
-		x := i % lepton3.FrameCols
+		y := i / d.cols
+		x := i % d.cols
 		// Deltas are "snaked" so work backwards through every second row.
 		if y&1 == 1 {
-			x = lepton3.FrameCols - x - 1
+			x = d.cols - x - 1
 		}
 
 		dv, err := unpacker.Next()
@@ -153,8 +159,8 @@ func (d *Decompressor) Next(bitWidth uint8, compressed ByteReaderReader, out *le
 	}
 
 	// Add to delta frame to previous frame.
-	for y := 0; y < lepton3.FrameRows; y++ {
-		for x := 0; x < lepton3.FrameCols; x++ {
+	for y := 0; y < d.rows; y++ {
+		for x := 0; x < d.cols; x++ {
 			out.Pix[y][x] = uint16(int32(d.prevFrame.Pix[y][x]) + d.deltas[y][x])
 			// Now that prevFrame[y][x] has been used, copy the new
 			// value in for the next call to Next() to use.
