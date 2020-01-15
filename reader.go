@@ -47,15 +47,23 @@ type Reader struct {
 	header Fields
 }
 
+// EmptyFrame returns an initialized cptvframe.Frame sized
+// accordingly to the CPTV file frames.
+func (r *Reader) EmptyFrame() *cptvframe.Frame {
+	return cptvframe.NewFrame(r)
+}
+
 // Version returns the version number of the CPTV file.
 func (r *Reader) Version() int {
 	return r.parser.version
 }
 
+// ResX returns the x resolution of the CPTV file.
 func (r *Reader) ResX() int {
 	return r.header.ResX()
 }
 
+// ResY returns the y resolution of the CPTV file.
 func (r *Reader) ResY() int {
 	return r.header.ResY()
 }

@@ -17,10 +17,10 @@ type TestCamera struct {
 func NewTestCamera() *TestCamera {
 	return new(TestCamera)
 }
-func (cam *TestCamera) XRes() int {
+func (cam *TestCamera) ResX() int {
 	return 160
 }
-func (cam *TestCamera) YRes() int {
+func (cam *TestCamera) ResY() int {
 	return 320
 }
 
@@ -35,9 +35,9 @@ func TestFrameCopy(t *testing.T) {
 	// Pixel values.
 	frame.Pix[0][0] = 1
 	frame.Pix[9][7] = 2
-	frame.Pix[camera.YRes()-1][0] = 3
-	frame.Pix[0][camera.XRes()-1] = 4
-	frame.Pix[camera.YRes()-1][camera.XRes()-1] = 5
+	frame.Pix[camera.ResY()-1][0] = 3
+	frame.Pix[0][camera.ResX()-1] = 4
+	frame.Pix[camera.ResY()-1][camera.ResX()-1] = 5
 	// Status values.
 	frame.Status.TimeOn = 10 * time.Second
 	frame.Status.FrameCount = 123
@@ -48,8 +48,8 @@ func TestFrameCopy(t *testing.T) {
 
 	assert.Equal(t, 1, int(frame2.Pix[0][0]))
 	assert.Equal(t, 2, int(frame2.Pix[9][7]))
-	assert.Equal(t, 3, int(frame2.Pix[camera.YRes()-1][0]))
-	assert.Equal(t, 4, int(frame2.Pix[0][camera.XRes()-1]))
-	assert.Equal(t, 5, int(frame2.Pix[camera.YRes()-1][camera.XRes()-1]))
+	assert.Equal(t, 3, int(frame2.Pix[camera.ResY()-1][0]))
+	assert.Equal(t, 4, int(frame2.Pix[0][camera.ResX()-1]))
+	assert.Equal(t, 5, int(frame2.Pix[camera.ResY()-1][camera.ResX()-1]))
 	assert.Equal(t, frame.Status, frame2.Status)
 }

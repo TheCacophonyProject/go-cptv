@@ -20,7 +20,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -133,7 +132,7 @@ func TestFrameRoundTrip(t *testing.T) {
 	r, err := NewReader(cptvBytes)
 	require.NoError(t, err)
 
-	frameD := cptvframe.NewFrame(camera)
+	frameD := r.EmptyFrame()
 	require.NoError(t, r.ReadFrame(frameD))
 	assert.Equal(t, frame0, frameD)
 	require.NoError(t, r.ReadFrame(frameD))
