@@ -29,6 +29,7 @@ type TestCamera struct {
 func (cam *TestCamera) ResX() int {
 	return 200
 }
+
 func (cam *TestCamera) ResY() int {
 	return 20
 }
