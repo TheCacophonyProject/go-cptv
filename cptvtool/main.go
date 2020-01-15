@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"github.com/TheCacophonyProject/go-cptv"
-	"github.com/TheCacophonyProject/lepton3"
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 )
 
 func main() {
@@ -49,7 +49,7 @@ func runMain() error {
 	// frame reading - the r.FrameCount method will do the same thing (and
 	// will similarly leave the file pointer at EOF)
 	frames := 0
-	frame := new(lepton3.Frame)
+	frame := cptvframe.NewFrame(fr.Reader)
 	for {
 		err := fr.ReadFrame(frame)
 		if err != nil {
