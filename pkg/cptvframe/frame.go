@@ -24,12 +24,13 @@ type Frame struct {
 	Status Telemetry
 }
 
+// Interface that all thermal camera implementations should implement
 type CameraResolution interface {
 	ResX() int
 	ResY() int
-	// FPS() int
 }
 
+// Creates a new frame sized for the provided camera implementation
 func NewFrame(c CameraResolution) *Frame {
 	frame := new(Frame)
 	frame.Pix = make([][]uint16, c.ResY())
