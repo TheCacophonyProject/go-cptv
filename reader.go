@@ -52,6 +52,14 @@ func (r *Reader) Version() int {
 	return r.parser.version
 }
 
+func (r *Reader) ResX() int {
+	return r.header.ResX()
+}
+
+func (r *Reader) ResY() int {
+	return r.header.ResY()
+}
+
 // Timestamp returns the CPTV timestamp. A zero time is returned if
 // the field wasn't present (shouldn't happen).
 func (r *Reader) Timestamp() time.Time {

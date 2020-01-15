@@ -20,28 +20,40 @@ import (
 	"time"
 
 	"github.com/TheCacophonyProject/go-cptv"
-	"github.com/TheCacophonyProject/lepton3"
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 )
+
+type TestCamera struct {
+}
+
+func (cam *TestCamera) ResX() int {
+	return 200
+}
+func (cam *TestCamera) ResY() int {
+	return 20
+}
 
 const cptvFileName = "v2.cptv"
 
 // Create a frame for playing with.
-func makeTestFrame() *lepton3.Frame {
+func makeTestFrame(c cptvframe.CameraResolution) *cptvframe.Frame {
 	// Generate a frame with values between 1024 and 8196
-	out := new(lepton3.Frame)
+	out := cptvframe.NewFrame(c)
 	const minVal = 1024
 	const maxVal = 8196
-	for y := 0; y < lepton3.FrameRows; y++ {
-		for x := 0; x < lepton3.FrameCols; x++ {
+	for y, row := range out.Pix {
+		for x, _ := range row {
 			out.Pix[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
 		}
 	}
+
 	return out
 }
 
 // Create a cptv file for testing purposes
 func createCPTVFile(cptvFileName string) {
 
+	camera := new(TestCamera)
 	file, err := os.Create(cptvFileName)
 	if err != nil {
 		fmt.Println(err)
@@ -49,7 +61,7 @@ func createCPTVFile(cptvFileName string) {
 	}
 	defer file.Close()
 
-	w := cptv.NewWriter(file)
+	w := cptv.NewWriter(file, camera)
 
 	ts := time.Date(2016, 5, 4, 3, 2, 1, 0, time.UTC)
 	lts := time.Date(2019, 5, 20, 9, 8, 7, 0, time.UTC)
@@ -67,7 +79,7 @@ func createCPTVFile(cptvFileName string) {
 	}
 	w.WriteHeader(header)
 
-	frame := makeTestFrame()
+	frame := makeTestFrame(camera)
 	w.WriteFrame(frame)
 	w.WriteFrame(frame)
 	w.WriteFrame(frame)
@@ -104,6 +116,9 @@ func openAndDisplayCPTVFileContents(cptvFileName string) {
 	fmt.Println("\tlocTimeStamp =", r.LocTimestamp().UTC())
 	fmt.Println("\tAltitude =", r.Altitude())
 	fmt.Println("\tAccuracy =", r.Accuracy())
+	fmt.Println("\tYResolution =", r.ResY())
+	fmt.Println("\tXResolution =", r.ResX())
+
 	frameCount, err := r.FrameCount()
 	fmt.Println("\tNum Frames =", frameCount)
 
