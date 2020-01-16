@@ -17,12 +17,23 @@ these files see the specifications:
 
 import (
     "github.com/TheCacophonyProject/go-cptv"
-    "github.com/TheCacophonyProject/lepton3"
+    "github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 )
 
+type TestCamera struct {
+}
 
-func writeFrames(frames []*lepton3.Frame) error {
-    w := cptv.NewFileWriter("out.cptv")
+func (cam *TestCamera) ResX() int {
+    return 200
+}
+
+func (cam *TestCamera) ResY() int {
+    return 20
+}
+
+func writeFrames(frames []*cptvframe.Frame) error {
+    camera := new(TestCamera)
+    w := cptv.NewFileWriter("out.cptv", camera)
     defer w.Close()
     err := w.WriterHeader("device-name")
     if err != nil {

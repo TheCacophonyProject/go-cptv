@@ -132,6 +132,16 @@ func (f Fields) get(key byte, expectedLen int) ([]byte, error) {
 	return buf, nil
 }
 
+func (f Fields) ResX() int {
+	res, _ := f.Uint32(XResolution)
+	return int(res)
+}
+
+func (f Fields) ResY() int {
+	res, _ := f.Uint32(YResolution)
+	return int(res)
+}
+
 // NewFieldWriter creates a new FieldWriter
 func NewFieldWriter() *FieldWriter {
 	return &FieldWriter{

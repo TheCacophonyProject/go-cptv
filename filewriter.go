@@ -17,18 +17,20 @@ package cptv
 import (
 	"bufio"
 	"os"
+
+	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
 )
 
 // NewFileWriter creates file 'filename' and returns a new FileWriter
 // with underlying buffer (bufio) Writer
-func NewFileWriter(filename string) (*FileWriter, error) {
+func NewFileWriter(filename string, c cptvframe.CameraSpec) (*FileWriter, error) {
 	f, err := os.Create(filename)
 	if err != nil {
 		return nil, err
 	}
 	bw := bufio.NewWriter(f)
 	return &FileWriter{
-		Writer: NewWriter(bw),
+		Writer: NewWriter(bw, c),
 		bw:     bw,
 		f:      f,
 	}, nil
