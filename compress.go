@@ -20,7 +20,7 @@ import (
 	"io"
 	"math"
 
-	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 )
 
 // NewCompressor creates a new Compressor.

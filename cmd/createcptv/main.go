@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/TheCacophonyProject/go-cptv"
-	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 )
 
 type TestCamera struct {

@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
