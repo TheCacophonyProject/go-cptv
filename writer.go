@@ -18,7 +18,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 )
 
 // NewWriter creates and returns a new Writer component

@@ -18,7 +18,7 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 )
 
 // NewFileWriter creates file 'filename' and returns a new FileWriter

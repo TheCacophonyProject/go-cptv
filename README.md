@@ -17,7 +17,7 @@ these files see the specifications:
 
 import (
     "github.com/TheCacophonyProject/go-cptv"
-    "github.com/TheCacophonyProject/go-cptv/pkg/cptvframe"
+    "github.com/TheCacophonyProject/go-cptv/cptvframe"
 )
 
 type TestCamera struct {
