@@ -27,7 +27,7 @@ func (fr *Frame) CreateCopy() *Frame {
 	for i := range fr.Pix {
 		frame.Pix[i] = make([]uint16, len(fr.Pix[i]))
 	}
-	fr.Copy(frame)
+	frame.Copy(fr)
 	return frame
 }
 
