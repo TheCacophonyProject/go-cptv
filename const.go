@@ -35,6 +35,7 @@ const (
 	LocTimestamp byte = 'S'
 	Altitude     byte = 'A'
 	Accuracy     byte = 'U'
+	FPS          byte = 'Z'
 
 	// Frame field keys
 	TimeOn      byte = 't'

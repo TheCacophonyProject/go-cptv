@@ -142,6 +142,11 @@ func (f Fields) ResY() int {
 	return int(res)
 }
 
+func (f Fields) FPS() int {
+	fps, _ := f.Uint32(FPS)
+	return int(fps)
+}
+
 // NewFieldWriter creates a new FieldWriter
 func NewFieldWriter() *FieldWriter {
 	return &FieldWriter{

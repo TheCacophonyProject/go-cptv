@@ -8,4 +8,5 @@ package cptvframe
 type CameraSpec interface {
 	ResX() int
 	ResY() int
+	FPS() int
 }

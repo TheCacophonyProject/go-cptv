@@ -66,6 +66,10 @@ func (r *Reader) ResX() int {
 // ResY returns the y resolution of the CPTV file.
 func (r *Reader) ResY() int {
 	return r.header.ResY()
+
+} // FPS returns the frames per second of the CPTV file.
+func (r *Reader) FPS() int {
+	return r.header.FPS()
 }
 
 // Timestamp returns the CPTV timestamp. A zero time is returned if
