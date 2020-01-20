@@ -21,6 +21,17 @@ func NewFrame(c CameraSpec) *Frame {
 }
 
 // Copy sets current frame as other frame
+func (fr *Frame) CreateCopy() *Frame {
+	frame := new(Frame)
+	frame.Pix = make([][]uint16, len(fr.Pix))
+	for i := range fr.Pix {
+		frame.Pix[i] = make([]uint16, len(fr.Pix[i]))
+	}
+	fr.Copy(frame)
+	return frame
+}
+
+// Copy sets current frame as other frame
 func (fr *Frame) Copy(orig *Frame) {
 	fr.Status = orig.Status
 	for y, row := range orig.Pix {
