@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TheCacophonyProject/lepton3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -40,11 +41,11 @@ func TestRoundTripHeaderDefaults(t *testing.T) {
 	assert.Equal(t, "", r.DeviceName())
 	assert.Equal(t, 0, r.DeviceID())
 	assert.Equal(t, 0, r.PreviewSecs())
-	assert.Equal(t, "", r.BrandName())
-	assert.Equal(t, "", r.ModelName())
+	assert.Equal(t, lepton3.Brand, r.BrandName())
+	assert.Equal(t, lepton3.Model, r.ModelName())
 	assert.Equal(t, camera.ResX(), r.ResX())
 	assert.Equal(t, camera.ResY(), r.ResY())
-	assert.Equal(t, 0, r.FPS())
+	assert.Equal(t, lepton3.FramesHz, r.FPS())
 
 	assert.Equal(t, "", r.MotionConfig())
 	assert.Equal(t, float32(0.0), r.Latitude())
@@ -76,7 +77,7 @@ func TestRoundTripHeader(t *testing.T) {
 		Accuracy:     10,
 		Brand:        "Dev",
 		Model:        "GP",
-		FPS:          9,
+		FPS:          camera.FPS(),
 	}
 	require.NoError(t, w.WriteHeader(header))
 	require.NoError(t, w.Close())

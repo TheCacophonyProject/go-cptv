@@ -21,6 +21,8 @@ import (
 	"io"
 	"math"
 	"time"
+
+	"github.com/TheCacophonyProject/lepton3"
 )
 
 // ReadFields reads the fields for a CPTV section, returning a new
@@ -144,6 +146,9 @@ func (f Fields) ResY() int {
 
 func (f Fields) FPS() int {
 	fps, _ := f.Uint8(FPS)
+	if fps == 0 {
+		return lepton3.FramesHz
+	}
 	return int(fps)
 }
 

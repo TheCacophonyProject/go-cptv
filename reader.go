@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/TheCacophonyProject/go-cptv/cptvframe"
+	"github.com/TheCacophonyProject/lepton3"
 )
 
 // NewReader returns a new Reader from the io.Reader given.
@@ -84,6 +85,10 @@ func (r *Reader) Timestamp() time.Time {
 // present.
 func (r *Reader) ModelName() string {
 	name, _ := r.header.String(Model)
+	if name == "" {
+		return lepton3.Model
+	}
+
 	return name
 }
 
@@ -92,6 +97,9 @@ func (r *Reader) ModelName() string {
 // present.
 func (r *Reader) BrandName() string {
 	name, _ := r.header.String(Brand)
+	if name == "" {
+		return lepton3.Brand
+	}
 	return name
 }
 

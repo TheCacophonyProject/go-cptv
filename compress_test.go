@@ -33,7 +33,7 @@ func (cam *TestCamera) ResY() int {
 	return 120
 }
 func (cam *TestCamera) FPS() int {
-	return 9
+	return 21
 }
 func TestCompressDecompress(t *testing.T) {
 	camera := new(TestCamera)
