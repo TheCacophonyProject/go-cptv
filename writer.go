@@ -48,6 +48,9 @@ type Header struct {
 	LocTimestamp time.Time
 	Altitude     float32
 	Accuracy     float32
+	FPS          int
+	Brand        string
+	Model        string
 }
 
 // WriteHeader writes a CPTV file header
@@ -67,6 +70,23 @@ func (w *Writer) WriteHeader(header Header) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if len(header.Model) > 0 {
+		err := fields.String(Model, header.Model)
+		if err != nil {
+			return err
+		}
+	}
+	if len(header.Brand) > 0 {
+		err := fields.String(Brand, header.Brand)
+		if err != nil {
+			return err
+		}
+	}
+
+	if header.FPS > 0 {
+		fields.Uint8(FPS, uint8(header.FPS))
 	}
 
 	if header.DeviceID > 0 {

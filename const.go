@@ -36,7 +36,7 @@ const (
 	Altitude     byte = 'A'
 	Accuracy     byte = 'U'
 	FPS          byte = 'Z'
-	Model        byte = 'A'
+	Model        byte = 'E'
 	Brand        byte = 'B'
 
 	// Frame field keys

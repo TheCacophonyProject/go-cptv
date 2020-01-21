@@ -40,6 +40,12 @@ func TestRoundTripHeaderDefaults(t *testing.T) {
 	assert.Equal(t, "", r.DeviceName())
 	assert.Equal(t, 0, r.DeviceID())
 	assert.Equal(t, 0, r.PreviewSecs())
+	assert.Equal(t, "", r.BrandName())
+	assert.Equal(t, "", r.ModelName())
+	assert.Equal(t, camera.ResX(), r.ResX())
+	assert.Equal(t, camera.ResY(), r.ResY())
+	assert.Equal(t, 0, r.FPS())
+
 	assert.Equal(t, "", r.MotionConfig())
 	assert.Equal(t, float32(0.0), r.Latitude())
 	assert.Equal(t, float32(0.0), r.Longitude())
@@ -68,6 +74,9 @@ func TestRoundTripHeader(t *testing.T) {
 		LocTimestamp: lts,
 		Altitude:     200,
 		Accuracy:     10,
+		Brand:        "Dev",
+		Model:        "GP",
+		FPS:          9,
 	}
 	require.NoError(t, w.WriteHeader(header))
 	require.NoError(t, w.Close())
@@ -84,6 +93,11 @@ func TestRoundTripHeader(t *testing.T) {
 	assert.Equal(t, lts, r.LocTimestamp().UTC())
 	assert.Equal(t, float32(200), r.Altitude())
 	assert.Equal(t, float32(10), r.Accuracy())
+	assert.Equal(t, "Dev", r.BrandName())
+	assert.Equal(t, "GP", r.ModelName())
+	assert.Equal(t, camera.ResX(), r.ResX())
+	assert.Equal(t, camera.ResY(), r.ResY())
+	assert.Equal(t, camera.FPS(), r.FPS())
 
 }
 

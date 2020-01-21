@@ -143,7 +143,7 @@ func (f Fields) ResY() int {
 }
 
 func (f Fields) FPS() int {
-	fps, _ := f.Uint32(FPS)
+	fps, _ := f.Uint8(FPS)
 	return int(fps)
 }
 

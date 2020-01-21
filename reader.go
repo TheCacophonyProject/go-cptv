@@ -79,6 +79,22 @@ func (r *Reader) Timestamp() time.Time {
 	return ts
 }
 
+// Model returns the camera model name field from the CPTV
+// recording. Returns an empty string if the model name field wasn't
+// present.
+func (r *Reader) ModelName() string {
+	name, _ := r.header.String(Model)
+	return name
+}
+
+// header returns the camera brand name field from the CPTV
+// recording. Returns an empty string if the brand name field wasn't
+// present.
+func (r *Reader) BrandName() string {
+	name, _ := r.header.String(Brand)
+	return name
+}
+
 // DeviceName returns the device name field from the CPTV
 // recording. Returns an empty string if the device name field wasn't
 // present.
