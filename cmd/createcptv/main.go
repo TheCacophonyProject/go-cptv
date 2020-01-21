@@ -34,6 +34,10 @@ func (cam *TestCamera) ResY() int {
 	return 20
 }
 
+func (cam *TestCamera) FPS() int {
+	return 9
+}
+
 const cptvFileName = "v2.cptv"
 
 // Create a frame for playing with.

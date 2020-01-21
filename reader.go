@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/TheCacophonyProject/go-cptv/cptvframe"
+	"github.com/TheCacophonyProject/lepton3"
 )
 
 // NewReader returns a new Reader from the io.Reader given.
@@ -66,6 +67,10 @@ func (r *Reader) ResX() int {
 // ResY returns the y resolution of the CPTV file.
 func (r *Reader) ResY() int {
 	return r.header.ResY()
+
+} // FPS returns the frames per second of the CPTV file.
+func (r *Reader) FPS() int {
+	return r.header.FPS()
 }
 
 // Timestamp returns the CPTV timestamp. A zero time is returned if
@@ -73,6 +78,29 @@ func (r *Reader) ResY() int {
 func (r *Reader) Timestamp() time.Time {
 	ts, _ := r.header.Timestamp(Timestamp)
 	return ts
+}
+
+// Model returns the camera model name field from the CPTV
+// recording. Returns an empty string if the model name field wasn't
+// present.
+func (r *Reader) ModelName() string {
+	name, _ := r.header.String(Model)
+	if name == "" {
+		return lepton3.Model
+	}
+
+	return name
+}
+
+// header returns the camera brand name field from the CPTV
+// recording. Returns an empty string if the brand name field wasn't
+// present.
+func (r *Reader) BrandName() string {
+	name, _ := r.header.String(Brand)
+	if name == "" {
+		return lepton3.Brand
+	}
+	return name
 }
 
 // DeviceName returns the device name field from the CPTV

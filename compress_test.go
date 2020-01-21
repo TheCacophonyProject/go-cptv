@@ -32,7 +32,9 @@ func (cam *TestCamera) ResX() int {
 func (cam *TestCamera) ResY() int {
 	return 120
 }
-
+func (cam *TestCamera) FPS() int {
+	return 21
+}
 func TestCompressDecompress(t *testing.T) {
 	camera := new(TestCamera)
 	frame0 := makeTestFrame(camera)
