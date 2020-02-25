@@ -18,8 +18,8 @@ const (
 	magic        = "CPTV"
 	version byte = 0x02
 
-	headerSection = 'H'
-	frameSection  = 'F'
+	HeaderSection = 'H'
+	FrameSection  = 'F'
 
 	// Header field keys
 	Timestamp    byte = 'T'

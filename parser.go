@@ -59,7 +59,7 @@ func (p *Parser) Header() (Fields, error) {
 	}
 	p.version = int(versionByte)
 
-	if err := p.checkByte("section", headerSection); err != nil {
+	if err := p.checkByte("section", HeaderSection); err != nil {
 		return nil, err
 	}
 
@@ -69,7 +69,7 @@ func (p *Parser) Header() (Fields, error) {
 // Frame parses a CPTV frame section header from the open file and returns
 // a subreader that allows access to the frame bytes.
 func (p *Parser) Frame() (Fields, io.Reader, error) {
-	if err := p.checkByte("section", frameSection); err != nil {
+	if err := p.checkByte("section", FrameSection); err != nil {
 		return nil, nil, err
 	}
 	fields, err := readFieldsN(p.r)
