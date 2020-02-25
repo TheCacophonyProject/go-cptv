@@ -35,30 +35,32 @@ type Builder struct {
 
 // WriteHeader writes a CPTV header to the current Writer
 func (b *Builder) WriteHeader(f *FieldWriter) error {
+	fieldData, numFields := f.Bytes()
 	_, err := b.w.Write(append(
 		[]byte(magic),
 		version,
-		headerSection,
-		byte(f.fieldCount),
+		HeaderSection,
+		byte(numFields),
 	))
 	if err != nil {
 		return err
 	}
 
-	_, err = b.w.Write(f.data)
+	_, err = b.w.Write(fieldData)
 	return err
 }
 
 // WriteFrame writes a CPTV frame to the current Writer
 func (b *Builder) WriteFrame(f *FieldWriter, frameData []byte) error {
 	// Frame header
-	_, err := b.w.Write([]byte{frameSection, byte(f.fieldCount)})
+	fieldData, numFields := f.Bytes()
+	_, err := b.w.Write([]byte{FrameSection, byte(numFields)})
 	if err != nil {
 		return err
 	}
 
 	// Frame fields
-	_, err = b.w.Write(f.data)
+	_, err = b.w.Write(fieldData)
 	if err != nil {
 		return err
 	}

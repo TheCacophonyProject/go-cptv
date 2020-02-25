@@ -223,3 +223,8 @@ func (f *FieldWriter) Float32(code byte, v float32) {
 	f.data = append(f.data, b...)
 	f.fieldCount++
 }
+
+// Bytes returns the encoded header and the number of fields represented.
+func (f *FieldWriter) Bytes() ([]byte, int) {
+	return f.data, int(f.fieldCount)
+}
