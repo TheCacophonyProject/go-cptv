@@ -36,7 +36,7 @@ func TestRoundTripHeaderDefaults(t *testing.T) {
 
 	r, err := NewReader(cptvBytes)
 	require.NoError(t, err)
-	assert.Equal(t, 2, r.Version())
+	assert.Equal(t, 3, r.Version())
 	assert.True(t, time.Since(r.Timestamp()) < time.Minute) // "now" was used
 	assert.Equal(t, "", r.DeviceName())
 	assert.Equal(t, 0, r.DeviceID())
@@ -122,19 +122,25 @@ func TestReaderFrameCount(t *testing.T) {
 }
 
 func TestFrameRoundTrip(t *testing.T) {
+	tempC := float64(20)
+	ffcTemp := float64(25)
 	camera := new(TestCamera)
 	frame0 := makeTestFrame(camera)
 	frame0.Status.TimeOn = 60 * time.Second
 	frame0.Status.LastFFCTime = 30 * time.Second
+	frame0.Status.TempC = tempC
+	frame0.Status.LastFFCTempC = ffcTemp
 
 	frame1 := makeOffsetFrame(camera, frame0)
 	frame1.Status.TimeOn = 61 * time.Second
 	frame1.Status.LastFFCTime = 31 * time.Second
-
+	frame0.Status.TempC = tempC
+	frame0.Status.LastFFCTempC = ffcTemp
 	frame2 := makeOffsetFrame(camera, frame1)
 	frame2.Status.TimeOn = 62 * time.Second
 	frame2.Status.LastFFCTime = 32 * time.Second
-
+	frame0.Status.TempC = tempC
+	frame0.Status.LastFFCTempC = ffcTemp
 	cptvBytes := new(bytes.Buffer)
 
 	w := NewWriter(cptvBytes, camera)
@@ -150,6 +156,9 @@ func TestFrameRoundTrip(t *testing.T) {
 	frameD := r.EmptyFrame()
 	require.NoError(t, r.ReadFrame(frameD))
 	assert.Equal(t, frame0, frameD)
+	assert.Equal(t, tempC, frameD.Status.TempC)
+	assert.Equal(t, ffcTemp, frameD.Status.LastFFCTempC)
+
 	require.NoError(t, r.ReadFrame(frameD))
 	assert.Equal(t, frame1, frameD)
 	require.NoError(t, r.ReadFrame(frameD))

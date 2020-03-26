@@ -182,6 +182,17 @@ func (r *Reader) ReadFrame(out *cptvframe.Frame) error {
 		return err
 	}
 
+	if r.parser.version >= 3 {
+		temp, err := fields.Float32(TempC)
+		if err == nil {
+			out.Status.TempC = float64(temp)
+		}
+		lastFFC, err := fields.Float32(LastFFCTempC)
+		if err == nil {
+			out.Status.LastFFCTempC = float64(lastFFC)
+		}
+	}
+
 	// This field is garbage below v2 so ignore it for older files.
 	if r.parser.version >= 2 {
 		timeOn, err := fields.Uint32(TimeOn)

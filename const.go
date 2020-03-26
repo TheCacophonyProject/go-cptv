@@ -16,7 +16,7 @@ package cptv
 
 const (
 	magic        = "CPTV"
-	version byte = 0x02
+	version byte = 0x03
 
 	HeaderSection = 'H'
 	FrameSection  = 'F'
@@ -40,8 +40,10 @@ const (
 	Brand        byte = 'B'
 
 	// Frame field keys
-	TimeOn      byte = 't'
-	BitWidth    byte = 'w'
-	FrameSize   byte = 'f'
-	LastFFCTime byte = 'c'
+	TimeOn       byte = 't'
+	BitWidth     byte = 'w'
+	FrameSize    byte = 'f'
+	LastFFCTime  byte = 'c'
+	TempC        byte = 'a'
+	LastFFCTempC byte = 'b'
 )
