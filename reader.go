@@ -92,6 +92,15 @@ func (r *Reader) ModelName() string {
 	return name
 }
 
+// Get the firmware version of the camera module, if present
+func (r *Reader) FirmwareVersion() string {
+	version, _ := r.header.String(Firmware)
+	if version == "" {
+		return "<unknown>"
+	}
+	return version
+}
+
 // header returns the camera brand name field from the CPTV
 // recording. Returns an empty string if the brand name field wasn't
 // present.
@@ -116,6 +125,12 @@ func (r *Reader) DeviceName() string {
 // present.
 func (r *Reader) DeviceID() int {
 	id, _ := r.header.Uint32(DeviceID)
+	return int(id)
+}
+
+// Get the camera module serial number if present
+func (r *Reader) SerialNumber() int {
+	id, _ := r.header.Uint32(CameraSerial)
 	return int(id)
 }
 
