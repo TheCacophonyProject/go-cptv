@@ -39,6 +39,8 @@ func TestRoundTripHeaderDefaults(t *testing.T) {
 	assert.Equal(t, 2, r.Version())
 	assert.True(t, time.Since(r.Timestamp()) < time.Minute) // "now" was used
 	assert.Equal(t, "", r.DeviceName())
+	assert.Equal(t, "<unknown>", r.FirmwareVersion())
+	assert.Equal(t, 0, r.SerialNumber())
 	assert.Equal(t, 0, r.DeviceID())
 	assert.Equal(t, 0, r.PreviewSecs())
 	assert.Equal(t, lepton3.Brand, r.BrandName())
@@ -78,6 +80,8 @@ func TestRoundTripHeader(t *testing.T) {
 		Brand:        "Dev",
 		Model:        "GP",
 		FPS:          camera.FPS(),
+		CameraSerial: 1234567890,
+		Firmware:     "1.2.3",
 	}
 	require.NoError(t, w.WriteHeader(header))
 	require.NoError(t, w.Close())
@@ -88,6 +92,8 @@ func TestRoundTripHeader(t *testing.T) {
 	assert.Equal(t, "nz42", r.DeviceName())
 	assert.Equal(t, 22, r.DeviceID())
 	assert.Equal(t, 8, r.PreviewSecs())
+	assert.Equal(t, "1.2.3", r.FirmwareVersion())
+	assert.Equal(t, 1234567890, r.SerialNumber())
 	assert.Equal(t, "keep on movin", r.MotionConfig())
 	assert.Equal(t, float32(-36.86667), r.Latitude())
 	assert.Equal(t, float32(174.76667), r.Longitude())
