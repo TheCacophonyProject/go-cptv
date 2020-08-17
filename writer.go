@@ -41,6 +41,8 @@ type Header struct {
 	Timestamp    time.Time
 	DeviceName   string
 	DeviceID     int
+	CameraSerial int
+	Firmware     string
 	PreviewSecs  int
 	MotionConfig string
 	Latitude     float32
@@ -64,9 +66,17 @@ func (w *Writer) WriteHeader(header Header) error {
 	fields.Uint32(XResolution, uint32(w.comp.cols))
 	fields.Uint32(YResolution, uint32(w.comp.rows))
 	fields.Uint8(Compression, 1)
+	fields.Uint32(CameraSerial, uint32(header.CameraSerial))
 
 	if len(header.DeviceName) > 0 {
 		err := fields.String(DeviceName, header.DeviceName)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(header.Firmware) > 0 {
+		err := fields.String(Firmware, header.Firmware)
 		if err != nil {
 			return err
 		}

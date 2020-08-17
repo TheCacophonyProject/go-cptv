@@ -67,6 +67,11 @@ After these a number of fields will exist.
 | Name          | Length   | Code  | Type    | Description
 | ------------  | ------   | ----- | ------- | ---------------------------------------------
 | Motion config | Variable | 'M'   | string  | Motion detection configuration in YAML
+| CameraSerial  | Variable | 'N'   | string  | Unique camera module serial number
+| Model         | Variable | 'E'   | string  | Camera module model ("lepton3", "lepton3.5")
+| Brand         | Variable | 'B'   | string  | Camera module brand ("flir")
+| Firmware      | Variable | 'V'   | string  | Camera module firmware revision "{MAJOR}.{MINOR}.{BUILD}"
+| DeviceID      | Variable | 'I'   | string  | Device id ("unique_id")
 | Preview secs  | 1        | 'P'   | uint8   | Number of seconds of recording before motion event was detected
 | Latitude      | 4        | 'L'   | float32 | Latitude of device location
 | Longitude     | 4        | 'O'   | float32 | Longitude of device location

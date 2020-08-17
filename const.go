@@ -38,6 +38,8 @@ const (
 	FPS          byte = 'Z'
 	Model        byte = 'E'
 	Brand        byte = 'B'
+	Firmware     byte = 'V'
+	CameraSerial byte = 'N'
 
 	// Frame field keys
 	TimeOn       byte = 't'
