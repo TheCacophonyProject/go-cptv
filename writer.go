@@ -138,6 +138,8 @@ func (w *Writer) WriteFrame(frame *cptvframe.Frame) error {
 	fields := NewFieldWriter()
 	fields.Uint32(TimeOn, durationToMillis(frame.Status.TimeOn))
 	fields.Uint32(LastFFCTime, durationToMillis(frame.Status.LastFFCTime))
+	fields.Float32(TempC, float32(frame.Status.TempC))
+	fields.Float32(LastFFCTempC, float32(frame.Status.LastFFCTempC))
 	fields.Uint8(BitWidth, uint8(bitWidth))
 	fields.Uint32(FrameSize, uint32(len(compFrame)))
 	return w.bldr.WriteFrame(fields, compFrame)

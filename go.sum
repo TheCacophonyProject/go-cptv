@@ -1,6 +1,6 @@
 github.com/TheCacophonyProject/go-cptv v0.0.0-20200116020937-858bd8b71512/go.mod h1:8H6Aaft5549sIWxcsuCIL2o60/TQkoF93fVoSTpgZb8=
-github.com/TheCacophonyProject/lepton3 v0.0.0-20200121020734-2ae28662e1bc h1:4Sq5LC0foeSOx5iE/m0AjhsqAwVrfOF7PbYjKbtNWnU=
-github.com/TheCacophonyProject/lepton3 v0.0.0-20200121020734-2ae28662e1bc/go.mod h1:xzPAWtvVCbJdJC2Gn1cG0Ovs/VP7XGGiQpUU8wU4HME=
+github.com/TheCacophonyProject/lepton3 v0.0.0-20200213011619-1934a9300bd3 h1:y0LtZ2cO/xuBCr7Sj4p/DhqEVYI+PtMyNfRiEjym9hg=
+github.com/TheCacophonyProject/lepton3 v0.0.0-20200213011619-1934a9300bd3/go.mod h1:xzPAWtvVCbJdJC2Gn1cG0Ovs/VP7XGGiQpUU8wU4HME=
 github.com/TheCacophonyProject/periph v2.0.1-0.20171006000146-a5370d2227a0+incompatible h1:bAJWG3pnh++laimpcSFBZV/+aKrvsf0OZuHC9+ZyXgU=
 github.com/TheCacophonyProject/periph v2.0.1-0.20171006000146-a5370d2227a0+incompatible/go.mod h1:K1wa07sGXKzV0G9p+4R069mZk4GOpqKW8GU6/k+BrIo=
 github.com/alexflint/go-arg v0.0.0-20180516182405-f7c0423bd11e/go.mod h1:PHxo6ZWOLVMZZgWSAqBynb/KhIqoGO6WKwOVX7rM9dg=
@@ -16,7 +16,10 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa h1:F+8P+gmewFQYRk6JoLQLwjBCTu3mcIURZfNkVweuRKA=
 golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
+golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e h1:3G+cUijn7XD+S4eJFddp53Pv7+slrESplyjG25HgL+k=
+golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e/go.mod h1:qpuaurCH72eLCgpAm/N6yyVIVM9cpaDIP3A8BGJEC5A=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 h1:yiW+nvdHb9LVqSHQBXfZCieqV4fzYhNBql77zY0ykqs=
 gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637/go.mod h1:BHsqpu/nsuzkT5BpiH1EMZPLyqSMM8JbIavyFACoFNk=
