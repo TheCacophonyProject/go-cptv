@@ -49,3 +49,30 @@ func TestReadV1File(t *testing.T) {
 	}
 	assert.Equal(t, 100, count)
 }
+
+func TestReadV2File(t *testing.T) {
+	r, err := NewFileReader("v2.cptv")
+	require.NoError(t, err)
+	defer r.Close()
+
+	require.Equal(t, 2, r.Version())
+	assert.Equal(t, "Wallaby", r.DeviceName())
+	assert.Equal(t, time.Date(2020, 8, 17, 19, 46, 16, 0, time.UTC), r.Timestamp().UTC().Truncate(time.Second))
+
+	frame := r.Reader.EmptyFrame()
+	count := 0
+	for {
+		err := r.ReadFrame(frame)
+		if err == io.EOF {
+			break
+		}
+		require.NoError(t, err)
+
+		// Unsupported fields in v2.
+		assert.Equal(t, float64(0), frame.Status.TempC)
+		assert.Equal(t, float64(0), frame.Status.LastFFCTempC)
+
+		count++
+	}
+	assert.Equal(t, 119, count)
+}
