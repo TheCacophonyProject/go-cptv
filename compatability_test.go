@@ -68,7 +68,6 @@ func TestReadV2File(t *testing.T) {
 		}
 		require.NoError(t, err)
 
-		// Unsupported fields in v2.
 		assert.Equal(t, float64(0), frame.Status.TempC)
 		assert.Equal(t, float64(0), frame.Status.LastFFCTempC)
 
