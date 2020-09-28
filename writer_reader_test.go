@@ -36,7 +36,7 @@ func TestRoundTripHeaderDefaults(t *testing.T) {
 
 	r, err := NewReader(cptvBytes)
 	require.NoError(t, err)
-	assert.Equal(t, 3, r.Version())
+	assert.Equal(t, 2, r.Version())
 	assert.True(t, time.Since(r.Timestamp()) < time.Minute) // "now" was used
 	assert.Equal(t, "", r.DeviceName())
 	assert.Equal(t, "<unknown>", r.FirmwareVersion())
