@@ -7,11 +7,12 @@ package cptvframe
 import "time"
 
 type Telemetry struct {
-	TimeOn       time.Duration
-	FFCState     string
-	FrameCount   int
-	FrameMean    uint16
-	TempC        float64
-	LastFFCTempC float64
-	LastFFCTime  time.Duration
+	TimeOn          time.Duration
+	FFCState        string
+	FrameCount      int
+	FrameMean       uint16
+	TempC           float64
+	LastFFCTempC    float64
+	LastFFCTime     time.Duration
+	BackgroundFrame bool
 }

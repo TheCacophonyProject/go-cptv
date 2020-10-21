@@ -125,7 +125,6 @@ func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 			out.Pix[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
 		}
 	}
-
 	return out
 }
 
