@@ -40,12 +40,12 @@ const (
 	Brand        byte = 'B'
 	Firmware     byte = 'V'
 	CameraSerial byte = 'N'
-
 	// Frame field keys
-	TimeOn       byte = 't'
-	BitWidth     byte = 'w'
-	FrameSize    byte = 'f'
-	LastFFCTime  byte = 'c'
-	TempC        byte = 'a'
-	LastFFCTempC byte = 'b'
+	TimeOn          byte = 't'
+	BitWidth        byte = 'w'
+	FrameSize       byte = 'f'
+	LastFFCTime     byte = 'c'
+	TempC           byte = 'a'
+	LastFFCTempC    byte = 'b'
+	BackgroundFrame byte = 'g'
 )

@@ -184,6 +184,11 @@ func (r *Reader) Accuracy() float32 {
 	return pre
 }
 
+func (r *Reader) HasBackgroundFrame() bool {
+	back, _ := r.header.Uint8(BackgroundFrame)
+	return back != 0
+}
+
 // ReadFrame extracts and decompresses the next frame in a CPTV
 // recording. At the end of the recording an io.EOF error will be
 // returned.
@@ -212,6 +217,13 @@ func (r *Reader) ReadFrame(out *cptvframe.Frame) error {
 		lastFFC, err := fields.Float32(LastFFCTempC)
 		if err == nil {
 			out.Status.LastFFCTempC = float64(lastFFC)
+		}
+
+		backgroundFrame, err := fields.Uint8(BackgroundFrame)
+		if err == nil {
+			out.Status.BackgroundFrame = backgroundFrame != 0
+		} else {
+			out.Status.BackgroundFrame = false
 		}
 	}
 

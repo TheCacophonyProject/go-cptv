@@ -38,21 +38,22 @@ type Writer struct {
 // Header defines the information stored in the header of a CPTV
 // file. All the fields are optional.
 type Header struct {
-	Timestamp    time.Time
-	DeviceName   string
-	DeviceID     int
-	CameraSerial int
-	Firmware     string
-	PreviewSecs  int
-	MotionConfig string
-	Latitude     float32
-	Longitude    float32
-	LocTimestamp time.Time
-	Altitude     float32
-	Accuracy     float32
-	FPS          int
-	Brand        string
-	Model        string
+	Timestamp       time.Time
+	DeviceName      string
+	DeviceID        int
+	CameraSerial    int
+	Firmware        string
+	PreviewSecs     int
+	MotionConfig    string
+	Latitude        float32
+	Longitude       float32
+	LocTimestamp    time.Time
+	Altitude        float32
+	Accuracy        float32
+	FPS             int
+	Brand           string
+	Model           string
+	BackgroundFrame *cptvframe.Frame
 }
 
 // WriteHeader writes a CPTV file header
@@ -128,18 +129,33 @@ func (w *Writer) WriteHeader(header Header) error {
 	if header.Accuracy != 0.0 {
 		fields.Float32(Accuracy, header.Accuracy)
 	}
+	if header.BackgroundFrame != nil {
+		fields.Uint8(BackgroundFrame, 1)
+	}
+	err := w.bldr.WriteHeader(fields)
+	if err != nil {
+		return err
+	}
 
-	return w.bldr.WriteHeader(fields)
+	if header.BackgroundFrame != nil {
+		header.BackgroundFrame.Status.BackgroundFrame = true
+		return w.WriteFrame(header.BackgroundFrame)
+	}
+	return err
 }
 
 // WriteFrame writes a CPTV frame
 func (w *Writer) WriteFrame(frame *cptvframe.Frame) error {
 	bitWidth, compFrame := w.comp.Next(frame)
 	fields := NewFieldWriter()
-	fields.Uint32(TimeOn, durationToMillis(frame.Status.TimeOn))
-	fields.Uint32(LastFFCTime, durationToMillis(frame.Status.LastFFCTime))
-	fields.Float32(TempC, float32(frame.Status.TempC))
-	fields.Float32(LastFFCTempC, float32(frame.Status.LastFFCTempC))
+	if frame.Status.BackgroundFrame {
+		fields.Uint8(BackgroundFrame, uint8(1))
+	} else {
+		fields.Uint32(TimeOn, durationToMillis(frame.Status.TimeOn))
+		fields.Uint32(LastFFCTime, durationToMillis(frame.Status.LastFFCTime))
+		fields.Float32(TempC, float32(frame.Status.TempC))
+		fields.Float32(LastFFCTempC, float32(frame.Status.LastFFCTempC))
+	}
 	fields.Uint8(BitWidth, uint8(bitWidth))
 	fields.Uint32(FrameSize, uint32(len(compFrame)))
 	return w.bldr.WriteFrame(fields, compFrame)

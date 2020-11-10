@@ -105,7 +105,7 @@ func TestRoundTripHeader(t *testing.T) {
 	assert.Equal(t, camera.ResX(), r.ResX())
 	assert.Equal(t, camera.ResY(), r.ResY())
 	assert.Equal(t, camera.FPS(), r.FPS())
-
+	assert.False(t, r.HasBackgroundFrame())
 }
 
 func TestReaderFrameCount(t *testing.T) {
@@ -161,6 +161,60 @@ func TestFrameRoundTrip(t *testing.T) {
 
 	frameD := r.EmptyFrame()
 	require.NoError(t, r.ReadFrame(frameD))
+	assert.Equal(t, frame0, frameD)
+	assert.Equal(t, tempC, frameD.Status.TempC)
+	assert.Equal(t, ffcTemp, frameD.Status.LastFFCTempC)
+
+	require.NoError(t, r.ReadFrame(frameD))
+	assert.Equal(t, frame1, frameD)
+	require.NoError(t, r.ReadFrame(frameD))
+	assert.Equal(t, frame2, frameD)
+
+	assert.Equal(t, io.EOF, r.ReadFrame(frameD))
+}
+
+func TestBackgroundFrame(t *testing.T) {
+	tempC := float64(20)
+	ffcTemp := float64(25)
+	camera := new(TestCamera)
+	background := makeTestFrame(camera)
+	background.Status.BackgroundFrame = true
+	frame0 := makeTestFrame(camera)
+	frame0.Status.TimeOn = 60 * time.Second
+	frame0.Status.LastFFCTime = 30 * time.Second
+	frame0.Status.TempC = tempC
+	frame0.Status.LastFFCTempC = ffcTemp
+
+	frame1 := makeOffsetFrame(camera, frame0)
+	frame1.Status.TimeOn = 61 * time.Second
+	frame1.Status.LastFFCTime = 31 * time.Second
+	frame0.Status.TempC = tempC
+	frame0.Status.LastFFCTempC = ffcTemp
+	frame2 := makeOffsetFrame(camera, frame1)
+	frame2.Status.TimeOn = 62 * time.Second
+	frame2.Status.LastFFCTime = 32 * time.Second
+	frame0.Status.TempC = tempC
+	frame0.Status.LastFFCTempC = ffcTemp
+	cptvBytes := new(bytes.Buffer)
+
+	w := NewWriter(cptvBytes, camera)
+	require.NoError(t, w.WriteHeader(Header{BackgroundFrame: background}))
+	require.NoError(t, w.WriteFrame(frame0))
+	require.NoError(t, w.WriteFrame(frame1))
+	require.NoError(t, w.WriteFrame(frame2))
+	require.NoError(t, w.Close())
+
+	r, err := NewReader(cptvBytes)
+	require.NoError(t, err)
+
+	frameD := r.EmptyFrame()
+	assert.True(t, r.HasBackgroundFrame())
+	require.NoError(t, r.ReadFrame(frameD))
+	assert.True(t, frameD.Status.BackgroundFrame)
+	assert.Equal(t, frameD, background)
+
+	require.NoError(t, r.ReadFrame(frameD))
+	assert.False(t, frameD.Status.BackgroundFrame)
 	assert.Equal(t, frame0, frameD)
 	assert.Equal(t, tempC, frameD.Status.TempC)
 	assert.Equal(t, ffcTemp, frameD.Status.LastFFCTempC)

@@ -31,6 +31,7 @@ func TestReadV1File(t *testing.T) {
 	require.Equal(t, 1, r.Version())
 	assert.Equal(t, "livingsprings03", r.DeviceName())
 	assert.Equal(t, time.Date(2018, 9, 6, 9, 21, 25, 0, time.UTC), r.Timestamp().UTC().Truncate(time.Second))
+	assert.False(t, r.HasBackgroundFrame())
 
 	frame := r.Reader.EmptyFrame()
 	count := 0
@@ -44,6 +45,7 @@ func TestReadV1File(t *testing.T) {
 		// Unsupported fields in v1.
 		assert.Equal(t, time.Duration(0), frame.Status.TimeOn)
 		assert.Equal(t, time.Duration(0), frame.Status.LastFFCTime)
+		assert.False(t, frame.Status.BackgroundFrame)
 
 		count++
 	}
@@ -58,6 +60,7 @@ func TestReadV2File(t *testing.T) {
 	require.Equal(t, 2, r.Version())
 	assert.Equal(t, "Wallaby", r.DeviceName())
 	assert.Equal(t, time.Date(2020, 8, 17, 19, 46, 16, 0, time.UTC), r.Timestamp().UTC().Truncate(time.Second))
+	assert.False(t, r.HasBackgroundFrame())
 
 	frame := r.Reader.EmptyFrame()
 	count := 0
@@ -70,6 +73,7 @@ func TestReadV2File(t *testing.T) {
 
 		assert.Equal(t, float64(0), frame.Status.TempC)
 		assert.Equal(t, float64(0), frame.Status.LastFFCTempC)
+		assert.False(t, frame.Status.BackgroundFrame)
 
 		count++
 	}
