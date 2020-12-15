@@ -78,6 +78,7 @@ After these a number of fields will exist.
 | LocTimestamp  | 8        | 'S'   | uint64  | Time at which location of device was set.  Microseconds since 1970-01-01 UTC
 | Altitude      | 4        | 'A'   | float32 | Altitude of device location in metres.
 | Accuracy      | 4        | 'U'   | float32 | Estimated accuracy of location settings in metres.
+|BackgroundFrame| 1        | 'g'   | uint8 | Number of background frames in this file
 
 ## Frames
 
@@ -95,6 +96,13 @@ The following frame fields must exist in every frame:
 | Bit width     | 1      | 'w'   | uint8     | Bit width of the frame data
 | Frame size    | 4      | 'f'   | uint32    | Size of the frame data
 | Last FFC time | 4      | 'c'   | uint32    | Time of last Flat Field Correction (in ms since camera powered on)
+| Last FFC TempC| 4      | 'b'   | float32   | Temperature at last FFC
+| TempC         | 4      | 'a'   | float32   | Temperature of frame
+
+### Optional Frame fields
+
+| BackgroundFrame | 1        | 'g'   | uint8 | integer representation of a boolean 1 or 0 if this frame is a background frame
+
 
 ### Frame Data
 
