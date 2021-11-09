@@ -40,6 +40,9 @@ const (
 	Brand        byte = 'B'
 	Firmware     byte = 'V'
 	CameraSerial byte = 'N'
+	NumFrames    byte = 'J'
+	MaxTemp      byte = 'K'
+	MinTemp      byte = 'Q'
 	// Frame field keys
 	TimeOn          byte = 't'
 	BitWidth        byte = 'w'

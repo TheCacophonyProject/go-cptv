@@ -1,9 +1,9 @@
 language: go
 
 go:
-  - "1.12.x"
+  - "1.17.x"
 
-script:  
+script:
   - go mod tidy
   - git diff --exit-code --quiet || (echo "Please run 'go mod tidy' to clean up the 'go.mod' and 'go.sum' files."; false)
   - go vet && go test

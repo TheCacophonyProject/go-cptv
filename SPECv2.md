@@ -78,7 +78,10 @@ After these a number of fields will exist.
 | LocTimestamp  | 8        | 'S'   | uint64  | Time at which location of device was set.  Microseconds since 1970-01-01 UTC
 | Altitude      | 4        | 'A'   | float32 | Altitude of device location in metres.
 | Accuracy      | 4        | 'U'   | float32 | Estimated accuracy of location settings in metres.
-|BackgroundFrame| 1        | 'g'   | uint8 | Number of background frames in this file. In practise we are only checking this value is non zero, one should only expect a single background frame when reading a CPTV file
+|BackgroundFrame| 1        | 'g'   | uint8   | Number of background frames in this file. In practise we are only checking this value is non zero, one should only expect a single background frame when reading a CPTV file
+| NumFrames     | 2        | 'J'   | uint16 | Number of frames in cptv file
+| MaxPixel      | 2        | 'K'   | uint16 | Maximum pixel value excluding pixels on the edge (edge width of 1)
+| MinPixel      | 2        | 'Q'   | uint16 | Minimum pixel value excluding pixels on the edge (edge width of 1)
 
 ## Frames
 

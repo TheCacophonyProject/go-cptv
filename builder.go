@@ -15,37 +15,37 @@
 package cptv
 
 import (
-	"compress/gzip"
 	"io"
 )
 
-// NewBuilder returns a new Builder instance, ready to emit a gzip
-// compressed CPTV file to the provided Writer.
+// NewBuilder returns a new Builder instance, ready to write uncompressed cptv
 func NewBuilder(w io.Writer) *Builder {
 	return &Builder{
-		w: gzip.NewWriter(w),
+		w: w,
 	}
 }
 
 // Builder handles the low-level construction of CPTV sections and
 // fields. See Writer for a higher-level interface.
 type Builder struct {
-	w *gzip.Writer
+	w           io.Writer
+	fieldOffset int64
 }
 
 // WriteHeader writes a CPTV header to the current Writer
 func (b *Builder) WriteHeader(f *FieldWriter) error {
 	fieldData, numFields := f.Bytes()
-	_, err := b.w.Write(append(
+	pre := append(
 		[]byte(magic),
 		version,
 		HeaderSection,
 		byte(numFields),
-	))
+	)
+	_, err := b.w.Write(pre)
 	if err != nil {
 		return err
 	}
-
+	b.fieldOffset = int64(len(pre))
 	_, err = b.w.Write(fieldData)
 	return err
 }
@@ -68,12 +68,4 @@ func (b *Builder) WriteFrame(f *FieldWriter, frameData []byte) error {
 	// Frame thermal data
 	_, err = b.w.Write(frameData)
 	return err
-}
-
-// Close closes the current Writer
-func (b *Builder) Close() error {
-	if err := b.w.Flush(); err != nil {
-		return err
-	}
-	return b.w.Close()
 }

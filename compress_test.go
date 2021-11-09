@@ -16,6 +16,7 @@ package cptv
 
 import (
 	"bytes"
+	"math/rand"
 	"testing"
 
 	"github.com/TheCacophonyProject/go-cptv/cptvframe"
@@ -42,14 +43,14 @@ func TestCompressDecompress(t *testing.T) {
 
 	// Compress the frames.
 	compressor := NewCompressor(camera)
-	bitWidth0, frameComp := compressor.Next(frame0)
+	bitWidth0, _, _, frameComp := compressor.Next(frame0)
 	// first frame has no compression
 	assert.Equal(t, uint8(14), bitWidth0)
 	assert.Equal(t, 33603, len(frameComp))
 	frame0Comp := make([]byte, len(frameComp))
 	copy(frame0Comp, frameComp)
 
-	bitWidth1, frame1Comp := compressor.Next(frame1)
+	bitWidth1, _, _, frame1Comp := compressor.Next(frame1)
 	assert.Equal(t, uint8(2), bitWidth1)
 	assert.Equal(t, 4804, len(frame1Comp))
 
@@ -113,6 +114,21 @@ func TestTwosComp(t *testing.T) {
 		untwos := twosUncomp(twos, x.width)
 		assert.Equal(t, x.input, untwos, "twosUncomp(%d, %d)", twos, x.width)
 	}
+}
+
+func makeMinMaxTestFrame(c cptvframe.CameraSpec, minVal int, maxVal int, edge int) *cptvframe.Frame {
+	// Generate a frame with values between minVal and maxVal with larger values possible on the edge
+	out := cptvframe.NewFrame(c)
+
+	for y, row := range out.Pix {
+		for x, _ := range row {
+			if y < edge || y >= len(out.Pix)-edge || x < edge || x >= len(row)-edge {
+				out.Pix[y][x] = uint16(rand.Float32()*float32(maxVal) + float32(maxVal))
+			}
+			out.Pix[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
+		}
+	}
+	return out
 }
 
 func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {

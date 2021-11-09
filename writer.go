@@ -15,24 +15,101 @@
 package cptv
 
 import (
+	"bufio"
+	"compress/gzip"
 	"io"
+	"os"
 	"time"
 
 	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 )
 
-// NewWriter creates and returns a new Writer component
-func NewWriter(w io.Writer, c cptvframe.CameraSpec) *Writer {
-	return &Writer{
-		bldr: NewBuilder(w),
-		comp: NewCompressor(c),
+type DualWriter interface {
+	SeekTemp(offset int64, whence int) (int64, error)
+	FlushTemp() error
+	CompressedWriter() *bufio.Writer
+	TempWriter() io.Writer
+	TempReader() io.Reader
+
+	CloseTemp() error
+	CloseCompressed() error
+	DeleteTemp() error
+}
+
+type DualFileWriter struct {
+	DualWriter
+	tempF       *os.File
+	compressedF *os.File
+	tempWriter  *bufio.Writer
+}
+
+func NewDualFileWriter(filename string) (*DualFileWriter, error) {
+	tempF, err := os.Create(filename + ".tmp")
+	if err != nil {
+		return nil, err
 	}
+	compressedF, err := os.Create(filename)
+	if err != nil {
+		return nil, err
+	}
+	return &DualFileWriter{
+		tempF:       tempF,
+		compressedF: compressedF,
+		tempWriter:  bufio.NewWriter(tempF),
+	}, nil
+}
+
+func (rw *DualFileWriter) SeekTemp(offset int64, whence int) (int64, error) {
+	return rw.tempF.Seek(offset, whence)
+}
+
+func (rw *DualFileWriter) FlushTemp() error {
+	return rw.tempWriter.Flush()
+}
+func (rw *DualFileWriter) TempReader() io.Reader {
+	return bufio.NewReader(rw.tempF)
+}
+func (rw *DualFileWriter) CompressedWriter() *bufio.Writer {
+	return bufio.NewWriter(rw.compressedF)
+}
+func (rw *DualFileWriter) TempWriter() io.Writer {
+	return rw.tempWriter
+}
+func (w *DualFileWriter) DeleteTemp() error {
+	return os.Remove(w.tempF.Name())
+}
+
+func (w *DualFileWriter) CloseTemp() error {
+	return w.tempF.Close()
+}
+func (w *DualFileWriter) CloseCompressed() error {
+	return w.compressedF.Close()
+}
+
+// NewWriter creates and returns a new Writer component
+func NewWriter(filename string, c cptvframe.CameraSpec) (*Writer, error) {
+	fileWriter, err := NewDualFileWriter(filename)
+	if err != nil {
+		return nil, err
+	}
+	tempWriter := fileWriter.TempWriter()
+	return &Writer{
+		fileWriter: fileWriter,
+		rw:         tempWriter,
+		bldr:       NewBuilder(tempWriter),
+		comp:       NewCompressor(c),
+	}, nil
 }
 
 // Writer uses a Builder and Compressor to create CPTV files.
 type Writer struct {
-	bldr *Builder
-	comp *Compressor
+	fileWriter DualWriter
+	rw         io.Writer
+	bldr       *Builder
+	comp       *Compressor
+	frames     uint16
+	maxP       uint16
+	minP       uint16
 }
 
 // Header defines the information stored in the header of a CPTV
@@ -63,6 +140,10 @@ func (w *Writer) WriteHeader(header Header) error {
 		t = time.Now()
 	}
 	fields := NewFieldWriter()
+	// Placeholders these get written on close
+	fields.Uint16(NumFrames, 0)
+	fields.Uint16(MaxTemp, 0)
+	fields.Uint16(MinTemp, 0)
 	fields.Timestamp(Timestamp, t)
 	fields.Uint32(XResolution, uint32(w.comp.cols))
 	fields.Uint32(YResolution, uint32(w.comp.rows))
@@ -132,6 +213,7 @@ func (w *Writer) WriteHeader(header Header) error {
 	if header.BackgroundFrame != nil {
 		fields.Uint8(BackgroundFrame, 1)
 	}
+
 	err := w.bldr.WriteHeader(fields)
 	if err != nil {
 		return err
@@ -146,7 +228,14 @@ func (w *Writer) WriteHeader(header Header) error {
 
 // WriteFrame writes a CPTV frame
 func (w *Writer) WriteFrame(frame *cptvframe.Frame) error {
-	bitWidth, compFrame := w.comp.Next(frame)
+	w.frames += 1
+	bitWidth, maxP, minP, compFrame := w.comp.Next(frame)
+	if w.frames == 1 || minP < w.minP {
+		w.minP = minP
+	}
+	if w.frames == 1 || maxP > w.maxP {
+		w.maxP = maxP
+	}
 	fields := NewFieldWriter()
 	if frame.Status.BackgroundFrame {
 		fields.Uint8(BackgroundFrame, uint8(1))
@@ -161,9 +250,39 @@ func (w *Writer) WriteFrame(frame *cptvframe.Frame) error {
 	return w.bldr.WriteFrame(fields, compFrame)
 }
 
-// Close closes the CPTV file
+// Compress and Close closes the CPTV file
 func (w *Writer) Close() error {
-	return w.bldr.Close()
+	err := w.Compress()
+	if err != nil {
+		return err
+	}
+	w.fileWriter.CloseTemp()
+	return w.fileWriter.DeleteTemp()
+}
+
+func (w *Writer) Compress() error {
+	w.fileWriter.FlushTemp()
+
+	fields := NewFieldWriter()
+	fields.Uint16(NumFrames, w.frames)
+	fields.Uint16(MaxTemp, w.maxP)
+	fields.Uint16(MinTemp, w.minP)
+	b, _ := fields.Bytes()
+	w.fileWriter.SeekTemp(w.bldr.fieldOffset, 0)
+	w.rw.Write(b)
+	w.fileWriter.FlushTemp()
+
+	cw := w.fileWriter.CompressedWriter()
+	compressor := gzip.NewWriter(cw)
+	w.fileWriter.SeekTemp(0, 0)
+	_, err := io.Copy(compressor, bufio.NewReader(w.fileWriter.TempReader()))
+	if err != nil {
+		return err
+	}
+	compressor.Flush()
+	compressor.Close()
+	cw.Flush()
+	return w.fileWriter.CloseCompressed()
 }
 
 func durationToMillis(d time.Duration) uint32 {

@@ -59,14 +59,7 @@ func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 func createCPTVFile(cptvFileName string) {
 
 	camera := new(TestCamera)
-	file, err := os.Create(cptvFileName)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	w := cptv.NewWriter(file, camera)
+	w, _ := cptv.NewWriter(cptvFileName, camera)
 
 	ts := time.Date(2016, 5, 4, 3, 2, 1, 0, time.UTC)
 	lts := time.Date(2019, 5, 20, 9, 8, 7, 0, time.UTC)
