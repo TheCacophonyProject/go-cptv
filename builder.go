@@ -15,16 +15,13 @@
 package cptv
 
 import (
-	// "compress/gzip"
 	"io"
 )
 
-// NewBuilder returns a new Builder instance, ready to emit a gzip
-// compressed CPTV file to the provided Writer.
+// NewBuilder returns a new Builder instance, ready to write uncompressed cptv
 func NewBuilder(w io.Writer) *Builder {
 	return &Builder{
 		w: w,
-		// w: gzip.NewWriter(w),
 	}
 }
 
@@ -71,14 +68,4 @@ func (b *Builder) WriteFrame(f *FieldWriter, frameData []byte) error {
 	// Frame thermal data
 	_, err = b.w.Write(frameData)
 	return err
-}
-
-// Close closes the current Writer
-func (b *Builder) Close() error {
-	// TO DFO GP
-	return nil
-	// if err := b.w.Flush(); err != nil {
-	// 	return err
-	// }
-	// return nil
 }

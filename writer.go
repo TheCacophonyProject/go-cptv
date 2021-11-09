@@ -17,10 +17,11 @@ package cptv
 import (
 	"bufio"
 	"compress/gzip"
-	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 	"io"
 	"os"
 	"time"
+
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 )
 
 type DualWriter interface {
@@ -94,7 +95,6 @@ func NewWriter(filename string, c cptvframe.CameraSpec) (*Writer, error) {
 	tempWriter := fileWriter.TempWriter()
 	return &Writer{
 		fileWriter: fileWriter,
-		name:       filename,
 		rw:         tempWriter,
 		bldr:       NewBuilder(tempWriter),
 		comp:       NewCompressor(c),
@@ -104,7 +104,6 @@ func NewWriter(filename string, c cptvframe.CameraSpec) (*Writer, error) {
 // Writer uses a Builder and Compressor to create CPTV files.
 type Writer struct {
 	fileWriter DualWriter
-	name       string
 	rw         io.Writer
 	bldr       *Builder
 	comp       *Compressor
@@ -141,6 +140,7 @@ func (w *Writer) WriteHeader(header Header) error {
 		t = time.Now()
 	}
 	fields := NewFieldWriter()
+	// Placeholders these get written on close
 	fields.Uint16(NumFrames, 0)
 	fields.Uint16(MaxTemp, 0)
 	fields.Uint16(MinTemp, 0)
@@ -250,7 +250,7 @@ func (w *Writer) WriteFrame(frame *cptvframe.Frame) error {
 	return w.bldr.WriteFrame(fields, compFrame)
 }
 
-// Close closes the CPTV file
+// Compress and Close closes the CPTV file
 func (w *Writer) Close() error {
 	err := w.Compress()
 	if err != nil {
@@ -262,14 +262,16 @@ func (w *Writer) Close() error {
 
 func (w *Writer) Compress() error {
 	w.fileWriter.FlushTemp()
-	w.fileWriter.SeekTemp(w.bldr.fieldOffset, 0)
+
 	fields := NewFieldWriter()
 	fields.Uint16(NumFrames, w.frames)
 	fields.Uint16(MaxTemp, w.maxP)
 	fields.Uint16(MinTemp, w.minP)
 	b, _ := fields.Bytes()
+	w.fileWriter.SeekTemp(w.bldr.fieldOffset, 0)
 	w.rw.Write(b)
 	w.fileWriter.FlushTemp()
+
 	cw := w.fileWriter.CompressedWriter()
 	compressor := gzip.NewWriter(cw)
 	w.fileWriter.SeekTemp(0, 0)

@@ -15,18 +15,17 @@
 package cptv
 
 import (
-	// "bufio"
-	// "bytes"
 	"bufio"
-	"github.com/TheCacophonyProject/go-cptv/cptvframe"
-	"github.com/TheCacophonyProject/lepton3"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"testing"
 	"time"
 
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
+	"github.com/TheCacophonyProject/lepton3"
 )
 
 type DualTestFileWriter struct {
@@ -91,7 +90,6 @@ func NewTestWriter(afs *afero.Afero, filename string, c cptvframe.CameraSpec) (*
 
 	return &Writer{
 		fileWriter: fileWriter,
-		name:       filename,
 		rw:         tempWriter,
 		bldr:       NewBuilder(tempWriter),
 		comp:       NewCompressor(c),
@@ -332,5 +330,4 @@ func TestMinMax(t *testing.T) {
 	r, _ := NewReader(f)
 	assert.True(t, r.MaxPixel() <= 10000 && r.MaxPixel() >= 2000)
 	assert.True(t, r.MinPixel() <= 10000 && r.MinPixel() >= 2000)
-
 }

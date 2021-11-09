@@ -55,14 +55,6 @@ func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 	return out
 }
 
-type FileFlush struct {
-	*os.File
-}
-
-func (f *FileFlush) Flush() error {
-	return nil
-}
-
 // Create a cptv file for testing purposes
 func createCPTVFile(cptvFileName string) {
 

@@ -117,7 +117,7 @@ func TestTwosComp(t *testing.T) {
 }
 
 func makeMinMaxTestFrame(c cptvframe.CameraSpec, minVal int, maxVal int, edge int) *cptvframe.Frame {
-	// Generate a frame with values between 1024 and 8196
+	// Generate a frame with values between minVal and maxVal with larger values possible on the edge
 	out := cptvframe.NewFrame(c)
 
 	for y, row := range out.Pix {
@@ -138,7 +138,6 @@ func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 	const maxVal = 8196
 	for y, row := range out.Pix {
 		for x, _ := range row {
-
 			out.Pix[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
 		}
 	}

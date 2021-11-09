@@ -16,11 +16,12 @@ package cptv
 
 import (
 	"bufio"
-	"github.com/TheCacophonyProject/go-cptv/cptvframe"
-	"github.com/TheCacophonyProject/lepton3"
 	"io"
 	"io/ioutil"
 	"time"
+
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
+	"github.com/TheCacophonyProject/lepton3"
 )
 
 // NewReader returns a new Reader from the io.Reader given.

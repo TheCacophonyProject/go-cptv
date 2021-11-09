@@ -15,8 +15,9 @@
 package cptv
 
 import (
-	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 	"os"
+
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
 )
 
 // NewFileWriter creates file 'filename' and returns a new FileWriter
@@ -26,7 +27,6 @@ func NewFileWriter(filename string, c cptvframe.CameraSpec) (*FileWriter, error)
 	if err != nil {
 		return nil, err
 	}
-	// bw := bufio.NewWriter(f)
 	w, err := NewWriter(filename, c)
 	if err != nil {
 		return nil, err
@@ -52,6 +52,4 @@ func (fw *FileWriter) Name() string {
 // Close flushes the buffered writer and closes the open file
 func (fw *FileWriter) Close() {
 	fw.Writer.Close()
-	// fw.bw.Flush()
-	fw.f.Close()
 }
