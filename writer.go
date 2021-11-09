@@ -230,10 +230,10 @@ func (w *Writer) WriteHeader(header Header) error {
 func (w *Writer) WriteFrame(frame *cptvframe.Frame) error {
 	w.frames += 1
 	bitWidth, maxP, minP, compFrame := w.comp.Next(frame)
-	if w.minP == 0 || minP < w.minP {
+	if w.frames == 1 || minP < w.minP {
 		w.minP = minP
 	}
-	if w.maxP == 0 || maxP > w.maxP {
+	if w.frames == 1 || maxP > w.maxP {
 		w.maxP = maxP
 	}
 	fields := NewFieldWriter()
