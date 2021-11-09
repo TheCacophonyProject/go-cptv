@@ -55,18 +55,19 @@ func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 	return out
 }
 
+type FileFlush struct {
+	*os.File
+}
+
+func (f *FileFlush) Flush() error {
+	return nil
+}
+
 // Create a cptv file for testing purposes
 func createCPTVFile(cptvFileName string) {
 
 	camera := new(TestCamera)
-	file, err := os.Create(cptvFileName)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	w := cptv.NewWriter(file, camera)
+	w, _ := cptv.NewWriter(cptvFileName, camera)
 
 	ts := time.Date(2016, 5, 4, 3, 2, 1, 0, time.UTC)
 	lts := time.Date(2019, 5, 20, 9, 8, 7, 0, time.UTC)

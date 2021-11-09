@@ -15,26 +15,98 @@
 package cptv
 
 import (
-	"bytes"
+	// "bufio"
+	// "bytes"
+	"bufio"
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
+	"github.com/TheCacophonyProject/lepton3"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"io"
 	"testing"
 	"time"
 
-	"github.com/TheCacophonyProject/lepton3"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/spf13/afero"
 )
 
+type DualTestFileWriter struct {
+	DualWriter
+	tempF       afero.File
+	compressedF afero.File
+	tempWriter  *bufio.Writer
+	afs         *afero.Afero
+}
+
+func NewDualTestFileWriter(afs *afero.Afero, filename string) (*DualTestFileWriter, error) {
+
+	tempF, err := afs.Create(filename + ".tmp")
+	if err != nil {
+		return nil, err
+	}
+	compressedF, err := afs.Create(filename)
+	if err != nil {
+		return nil, err
+	}
+	return &DualTestFileWriter{
+		tempF:       tempF,
+		compressedF: compressedF,
+		tempWriter:  bufio.NewWriter(tempF),
+		afs:         afs,
+	}, nil
+}
+
+func (rw *DualTestFileWriter) SeekTemp(offset int64, whence int) (int64, error) {
+	return rw.tempF.Seek(offset, whence)
+}
+
+func (rw *DualTestFileWriter) FlushTemp() error {
+	return rw.tempWriter.Flush()
+}
+func (rw *DualTestFileWriter) TempReader() io.Reader {
+	return bufio.NewReader(rw.tempF)
+}
+func (rw *DualTestFileWriter) CompressedWriter() *bufio.Writer {
+	return bufio.NewWriter(rw.compressedF)
+}
+func (rw *DualTestFileWriter) TempWriter() io.Writer {
+	return rw.tempWriter
+}
+func (w *DualTestFileWriter) DeleteTemp() error {
+	return w.afs.Remove(w.tempF.Name())
+}
+
+func (w *DualTestFileWriter) CloseTemp() error {
+	return w.tempF.Close()
+}
+func (w *DualTestFileWriter) CloseCompressed() error {
+	return w.compressedF.Close()
+}
+
+func NewTestWriter(afs *afero.Afero, filename string, c cptvframe.CameraSpec) (*Writer, error) {
+	fileWriter, err := NewDualTestFileWriter(afs, filename)
+	if err != nil {
+		return nil, err
+	}
+	tempWriter := fileWriter.TempWriter()
+
+	return &Writer{
+		fileWriter: fileWriter,
+		name:       filename,
+		rw:         tempWriter,
+		bldr:       NewBuilder(tempWriter),
+		comp:       NewCompressor(c),
+	}, nil
+}
+
 func TestRoundTripHeaderDefaults(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	afs := &afero.Afero{Fs: fs}
 	camera := new(TestCamera)
-
-	cptvBytes := new(bytes.Buffer)
-
-	w := NewWriter(cptvBytes, camera)
+	w, err := NewTestWriter(afs, "test.cptv", camera)
 	require.NoError(t, w.WriteHeader(Header{}))
 	require.NoError(t, w.Close())
-
-	r, err := NewReader(cptvBytes)
+	f, err := afs.Open("test.cptv")
+	r, err := NewReader(f)
 	require.NoError(t, err)
 	assert.Equal(t, 2, r.Version())
 	assert.True(t, time.Since(r.Timestamp()) < time.Minute) // "now" was used
@@ -59,13 +131,12 @@ func TestRoundTripHeaderDefaults(t *testing.T) {
 }
 
 func TestRoundTripHeader(t *testing.T) {
-	camera := new(TestCamera)
-
 	ts := time.Date(2016, 5, 4, 3, 2, 1, 0, time.UTC)
 	lts := time.Date(2019, 5, 20, 9, 8, 7, 0, time.UTC)
-	cptvBytes := new(bytes.Buffer)
-
-	w := NewWriter(cptvBytes, camera)
+	fs := afero.NewMemMapFs()
+	afs := &afero.Afero{Fs: fs}
+	camera := new(TestCamera)
+	w, err := NewTestWriter(afs, "test.cptv", camera)
 	header := Header{
 		Timestamp:    ts,
 		DeviceName:   "nz42",
@@ -86,7 +157,8 @@ func TestRoundTripHeader(t *testing.T) {
 	require.NoError(t, w.WriteHeader(header))
 	require.NoError(t, w.Close())
 
-	r, err := NewReader(cptvBytes)
+	f, err := afs.Open("test.cptv")
+	r, err := NewReader(f)
 	require.NoError(t, err)
 	assert.Equal(t, ts, r.Timestamp().UTC())
 	assert.Equal(t, "nz42", r.DeviceName())
@@ -109,20 +181,26 @@ func TestRoundTripHeader(t *testing.T) {
 }
 
 func TestReaderFrameCount(t *testing.T) {
-	camera := new(TestCamera)
-	frame := makeTestFrame(camera)
-	cptvBytes := new(bytes.Buffer)
 
-	w := NewWriter(cptvBytes, camera)
+	fs := afero.NewMemMapFs()
+	afs := &afero.Afero{Fs: fs}
+	camera := new(TestCamera)
+	w, err := NewTestWriter(afs, "test.cptv", camera)
+
 	require.NoError(t, w.WriteHeader(Header{}))
+	frame := makeTestFrame(camera)
 	require.NoError(t, w.WriteFrame(frame))
 	require.NoError(t, w.WriteFrame(frame))
 	require.NoError(t, w.WriteFrame(frame))
 	require.NoError(t, w.Close())
+	f, err := afs.Open("test.cptv")
+	r, err := NewReader(f)
+	assert.Equal(t, 2, r.Version())
+	assert.Equal(t, uint16(3), r.NumFrames())
 
-	r, err := NewReader(cptvBytes)
 	require.NoError(t, err)
 	c, err := r.FrameCount()
+
 	require.NoError(t, err)
 	assert.Equal(t, 3, c)
 }
@@ -147,16 +225,19 @@ func TestFrameRoundTrip(t *testing.T) {
 	frame2.Status.LastFFCTime = 32 * time.Second
 	frame0.Status.TempC = tempC
 	frame0.Status.LastFFCTempC = ffcTemp
-	cptvBytes := new(bytes.Buffer)
 
-	w := NewWriter(cptvBytes, camera)
+	fs := afero.NewMemMapFs()
+	afs := &afero.Afero{Fs: fs}
+	w, err := NewTestWriter(afs, "test.cptv", camera)
+
 	require.NoError(t, w.WriteHeader(Header{}))
 	require.NoError(t, w.WriteFrame(frame0))
 	require.NoError(t, w.WriteFrame(frame1))
 	require.NoError(t, w.WriteFrame(frame2))
 	require.NoError(t, w.Close())
 
-	r, err := NewReader(cptvBytes)
+	f, err := afs.Open("test.cptv")
+	r, err := NewReader(f)
 	require.NoError(t, err)
 
 	frameD := r.EmptyFrame()
@@ -195,16 +276,19 @@ func TestBackgroundFrame(t *testing.T) {
 	frame2.Status.LastFFCTime = 32 * time.Second
 	frame0.Status.TempC = tempC
 	frame0.Status.LastFFCTempC = ffcTemp
-	cptvBytes := new(bytes.Buffer)
 
-	w := NewWriter(cptvBytes, camera)
+	fs := afero.NewMemMapFs()
+	afs := &afero.Afero{Fs: fs}
+	w, err := NewTestWriter(afs, "test.cptv", camera)
+
 	require.NoError(t, w.WriteHeader(Header{BackgroundFrame: background}))
 	require.NoError(t, w.WriteFrame(frame0))
 	require.NoError(t, w.WriteFrame(frame1))
 	require.NoError(t, w.WriteFrame(frame2))
 	require.NoError(t, w.Close())
 
-	r, err := NewReader(cptvBytes)
+	f, err := afs.Open("test.cptv")
+	r, err := NewReader(f)
 	require.NoError(t, err)
 
 	frameD := r.EmptyFrame()

@@ -54,17 +54,25 @@ type Compressor struct {
 //
 // IMPORTANT: The returned byte slice is reused and therefore is only
 // valid until the next call to Next.
-func (c *Compressor) Next(curr *cptvframe.Frame) (uint8, []byte) {
+func (c *Compressor) Next(curr *cptvframe.Frame) (uint8, uint16, uint16, []byte) {
 	// Generate the interframe delta.
 	// The output is written in a "snaked" fashion to avoid
 	// potentially greater deltas at the edges in the next stage.
 	var i int
+	var maxPixel uint16 = 0
+	var minPixel uint16 = 0
 	for y := 0; y < c.rows; y++ {
 		i = y * c.cols
 		if y&1 == 1 {
 			i += c.cols - 1
 		}
 		for x := 0; x < c.cols; x++ {
+			if maxPixel == 0 || curr.Pix[y][x] > maxPixel {
+				maxPixel = curr.Pix[y][x]
+			}
+			if minPixel == 0 || curr.Pix[y][x] < minPixel {
+				minPixel = curr.Pix[y][x]
+			}
 			c.frameDelta[i] = int32(curr.Pix[y][x]) - int32(c.prevFrame.Pix[y][x])
 			// Now that prevFrame[y][x] has been used, copy the value
 			// for the current frame in for the next call to Next().
@@ -97,7 +105,7 @@ func (c *Compressor) Next(curr *cptvframe.Frame) (uint8, []byte) {
 
 	// Pack the deltas according to the bit width determined
 	PackBits(width, c.adjDeltas, c.outBuf)
-	return width, c.outBuf.Bytes()
+	return width, maxPixel, minPixel, c.outBuf.Bytes()
 }
 
 // NewDecompressor creates a new Decompressor.

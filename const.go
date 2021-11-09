@@ -48,4 +48,7 @@ const (
 	TempC           byte = 'a'
 	LastFFCTempC    byte = 'b'
 	BackgroundFrame byte = 'g'
+	NumFrames       byte = 'd'
+	MaxTemp         byte = 'e'
+	MinTemp         byte = 'h'
 )

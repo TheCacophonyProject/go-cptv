@@ -16,12 +16,11 @@ package cptv
 
 import (
 	"bufio"
+	"github.com/TheCacophonyProject/go-cptv/cptvframe"
+	"github.com/TheCacophonyProject/lepton3"
 	"io"
 	"io/ioutil"
 	"time"
-
-	"github.com/TheCacophonyProject/go-cptv/cptvframe"
-	"github.com/TheCacophonyProject/lepton3"
 )
 
 // NewReader returns a new Reader from the io.Reader given.
@@ -67,10 +66,26 @@ func (r *Reader) ResX() int {
 // ResY returns the y resolution of the CPTV file.
 func (r *Reader) ResY() int {
 	return r.header.ResY()
+}
 
-} // FPS returns the frames per second of the CPTV file.
+// FPS returns the frames per second of the CPTV file.
 func (r *Reader) FPS() int {
 	return r.header.FPS()
+}
+
+func (r *Reader) NumFrames() uint16 {
+	num, _ := r.header.Uint16(NumFrames)
+	return num
+}
+
+func (r *Reader) MaxPixel() uint16 {
+	t, _ := r.header.Uint16(MaxTemp)
+	return t
+}
+
+func (r *Reader) MinPixel() uint16 {
+	t, _ := r.header.Uint16(MinTemp)
+	return t
 }
 
 // Timestamp returns the CPTV timestamp. A zero time is returned if

@@ -26,7 +26,9 @@ func NewFileReader(filename string) (*FileReader, error) {
 		return nil, err
 	}
 	br := bufio.NewReader(f)
-	r, err := NewReader(br)
+	f, err = os.Open("notes.txt")
+
+	r, err := NewReader(f)
 	if err != nil {
 		f.Close()
 		return nil, err
