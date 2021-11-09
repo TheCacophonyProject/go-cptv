@@ -16,6 +16,7 @@ package cptv
 
 import (
 	"bytes"
+	"math/rand"
 	"testing"
 
 	"github.com/TheCacophonyProject/go-cptv/cptvframe"
@@ -115,6 +116,21 @@ func TestTwosComp(t *testing.T) {
 	}
 }
 
+func makeMinMaxTestFrame(c cptvframe.CameraSpec, minVal int, maxVal int, edge int) *cptvframe.Frame {
+	// Generate a frame with values between 1024 and 8196
+	out := cptvframe.NewFrame(c)
+
+	for y, row := range out.Pix {
+		for x, _ := range row {
+			if y < edge || y >= len(out.Pix)-edge || x < edge || x >= len(row)-edge {
+				out.Pix[y][x] = uint16(rand.Float32()*float32(maxVal) + float32(maxVal))
+			}
+			out.Pix[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
+		}
+	}
+	return out
+}
+
 func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 	// Generate a frame with values between 1024 and 8196
 	out := cptvframe.NewFrame(c)
@@ -122,6 +138,7 @@ func makeTestFrame(c cptvframe.CameraSpec) *cptvframe.Frame {
 	const maxVal = 8196
 	for y, row := range out.Pix {
 		for x, _ := range row {
+
 			out.Pix[y][x] = uint16(((y * x) % (maxVal - minVal)) + minVal)
 		}
 	}

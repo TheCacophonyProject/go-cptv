@@ -69,7 +69,7 @@ func (c *Compressor) Next(curr *cptvframe.Frame) (uint8, uint16, uint16, []byte)
 		}
 		for x := 0; x < c.cols; x++ {
 
-			if y >= edge && y < c.rows-edge && x >= edge && x < c.cols-edge {
+			if (y >= edge && y < c.rows-edge) || (x >= edge && x < c.cols-edge) {
 				if maxPixel == 0 || curr.Pix[y][x] > maxPixel {
 					maxPixel = curr.Pix[y][x]
 				}

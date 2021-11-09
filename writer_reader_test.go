@@ -310,3 +310,27 @@ func TestBackgroundFrame(t *testing.T) {
 
 	assert.Equal(t, io.EOF, r.ReadFrame(frameD))
 }
+
+func TestMinMax(t *testing.T) {
+
+	fs := afero.NewMemMapFs()
+	afs := &afero.Afero{Fs: fs}
+	camera := new(TestCamera)
+	w, _ := NewTestWriter(afs, "test.cptv", camera)
+
+	require.NoError(t, w.WriteHeader(Header{}))
+	frame := makeMinMaxTestFrame(camera, 2000, 10000, 1)
+	require.NoError(t, w.WriteFrame(frame))
+	frame = makeMinMaxTestFrame(camera, 2000, 10000, 1)
+
+	require.NoError(t, w.WriteFrame(frame))
+	frame = makeMinMaxTestFrame(camera, 2000, 10000, 1)
+
+	require.NoError(t, w.WriteFrame(frame))
+	require.NoError(t, w.Close())
+	f, _ := afs.Open("test.cptv")
+	r, _ := NewReader(f)
+	assert.True(t, r.MaxPixel() <= 10000 && r.MaxPixel() >= 2000)
+	assert.True(t, r.MinPixel() <= 10000 && r.MinPixel() >= 2000)
+
+}
