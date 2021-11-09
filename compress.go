@@ -61,17 +61,21 @@ func (c *Compressor) Next(curr *cptvframe.Frame) (uint8, uint16, uint16, []byte)
 	var i int
 	var maxPixel uint16 = 0
 	var minPixel uint16 = 0
+	var edge = 1
 	for y := 0; y < c.rows; y++ {
 		i = y * c.cols
 		if y&1 == 1 {
 			i += c.cols - 1
 		}
 		for x := 0; x < c.cols; x++ {
-			if maxPixel == 0 || curr.Pix[y][x] > maxPixel {
-				maxPixel = curr.Pix[y][x]
-			}
-			if minPixel == 0 || curr.Pix[y][x] < minPixel {
-				minPixel = curr.Pix[y][x]
+
+			if y >= edge && y < c.rows-edge && x >= edge && x < c.cols-edge {
+				if maxPixel == 0 || curr.Pix[y][x] > maxPixel {
+					maxPixel = curr.Pix[y][x]
+				}
+				if minPixel == 0 || curr.Pix[y][x] < minPixel {
+					minPixel = curr.Pix[y][x]
+				}
 			}
 			c.frameDelta[i] = int32(curr.Pix[y][x]) - int32(c.prevFrame.Pix[y][x])
 			// Now that prevFrame[y][x] has been used, copy the value

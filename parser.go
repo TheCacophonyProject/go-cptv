@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 )
 
 // NewParser returns a new Parser instance, for parsing a gzip
@@ -46,11 +45,8 @@ type Parser struct {
 // Header parses a CPTV file header from the open file.
 func (p *Parser) Header() (Fields, error) {
 	if magicRead, err := p.r.ReadN(4); err != nil {
-		log.Printf("Magic %v", magicRead)
 		return nil, err
 	} else if string(magicRead) != magic {
-		log.Printf("Magic %v", magicRead)
-
 		return nil, errors.New("magic not found")
 	}
 
